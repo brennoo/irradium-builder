@@ -1,0 +1,51 @@
+builder/cpe-map.tsv
+  s_7dc4a4f7662c84::t_b02dbe4b31ec4e 600
+builder/vulntool/ports.py
+  s_7dc4a4f7662c84::t_833409e69e4960 15-16,322,327-328,331,333,335-347,349-352,354-359,365-374,381-384,388,390,392-398,402-403,416,419-436,439-441,443,445-447,449-450,452-463,465-472,578,582,586-589,603,618-632,653-667,685-688,691-695,702-703
+  s_7dc4a4f7662c84::t_e11be458c29f61 362-364
+  s_7dc4a4f7662c84::t_b56736211f5e56 413-415
+  s_7dc4a4f7662c84::t_7fa59f5cc2fadd 417
+  s_7dc4a4f7662c84::t_55fa673b6928a5 437-438
+  s_7dc4a4f7662c84::t_fcf390027117b8 444
+  s_7dc4a4f7662c84::t_8eabb2916c8853 448
+  s_7dc4a4f7662c84::t_97b121baf6bb2e 451
+  s_7dc4a4f7662c84::t_e7b12f6a6680f6 464
+  s_7dc4a4f7662c84::t_0b6cce0e730d7c 473-475
+  s_7dc4a4f7662c84::t_b2cb7f71a34c26 704
+ports/custom/custom-contrib/haproxy/Pkgfile
+  s_7dc4a4f7662c84::t_9e4cc88198929d 36-37
+  s_7dc4a4f7662c84::t_cc1557edb3d9f6 1-35,38-52
+builder/vulntool/scan.py
+  s_7dc4a4f7662c84::t_833409e69e4960 369
+ports/custom/custom-contrib/haproxy/.override
+  s_7dc4a4f7662c84::t_69221a0aab581a 1-8
+packages/build.txt
+  s_7dc4a4f7662c84::t_25c5f8a3e1027d 9
+  s_7dc4a4f7662c84::t_69221a0aab581a 10
+ports/custom/custom-contrib/haproxy/0001-Use-CFLAGS-and-LDFLAGS-when-building-admin.patch
+  s_7dc4a4f7662c84::t_4bb3c14d80b43b 1-39
+ports/custom/custom-contrib/haproxy/haproxy.cfg.example
+  s_7dc4a4f7662c84::t_bef0ca1a92439c 1-53
+ports/custom/custom-contrib/haproxy/haproxy.logrotate
+  s_7dc4a4f7662c84::t_942cca7c8d5a20 1-11
+ports/custom/custom-contrib/haproxy/pre-install
+  s_7dc4a4f7662c84::t_743e152143c4f7 1-5
+ports/custom/custom-contrib/haproxy/rc.haproxy
+  s_7dc4a4f7662c84::t_f50b944797d3d6 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cf7c5f5ac7dc9859c93501989c0d6e9e1c9e2984",
+  "prompts": {},
+  "sessions": {
+    "s_7dc4a4f7662c84": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "85c51e62-cda0-44aa-abdf-d307b6fb17fc",
+        "model": "arn:aws:bedrock:us-east-1:859822527547:application-inference-profile/wm8snz9s5mkh"
+      },
+      "human_author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
