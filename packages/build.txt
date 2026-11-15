@@ -3,5 +3,6 @@ libb2
 git
 unbound
 lua
+libpcap
 nmap
 notqmail

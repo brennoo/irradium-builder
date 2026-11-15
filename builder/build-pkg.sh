@@ -278,6 +278,7 @@ ensure_image
 ensure_keys
 mkdir -p "$CACHE_DIR/sources" "$CACHE_DIR/packages" "$REPO_DIR"
 
+BUILD_STATUS=0
 docker run -i --rm --platform "$DOCKER_PLATFORM" \
     -e SKIP_EXISTING="$SKIP_EXISTING" \
     -e MIRROR_URL="$MIRROR_DOMAIN/irradium/packages/$ARCH/$DISTR_VERSION" \
@@ -287,7 +288,7 @@ docker run -i --rm --platform "$DOCKER_PLATFORM" \
     -v "$CACHE_DIR:/var/cache/pkgmk" \
     -v "$REPO_DIR:/repo" \
     -v "$KEYS_DIR:/etc/pkg-get" \
-    "$IMAGE_NAME" /bin/bash -s -- "${TARGETS[@]}" <<'EOS'
+    "$IMAGE_NAME" /bin/bash -s -- "${TARGETS[@]}" <<'EOS' || BUILD_STATUS=$?
 set -euo pipefail
 
 UPSTREAM_MIRRORS=(
@@ -526,3 +527,5 @@ EOS
 if [[ "$DO_PUBLISH" == "yes" ]]; then
     publish_repo
 fi
+
+exit "$BUILD_STATUS"
