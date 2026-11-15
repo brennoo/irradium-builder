@@ -1,0 +1,16 @@
+builder/build-pkg.sh
+  h_c872c6f1ba48bc 281,291,530-531
+packages/build.txt
+  h_c872c6f1ba48bc 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "40cd8dd763698c410e1d6fc6658680a02bd46dbf",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
