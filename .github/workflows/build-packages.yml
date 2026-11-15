@@ -58,6 +58,15 @@ jobs:
         with:
           platforms: all
 
+      - name: Ensure AWS CLI is installed
+        run: |
+          if ! command -v aws >/dev/null 2>&1; then
+            curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o /tmp/awscliv2.zip
+            unzip -q /tmp/awscliv2.zip -d /tmp
+            sudo /tmp/aws/install
+            rm -rf /tmp/awscliv2.zip /tmp/aws
+          fi
+
       - name: Build & publish packages
         env:
           INPUT_PACKAGES: ${{ inputs.packages }}

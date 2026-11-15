@@ -64,7 +64,28 @@ SSL_CTX.load_verify_locations(cadata=MISSING_INTERMEDIATES_PEM)
 
 ARCH = os.environ.get("ARCH", "riscv64")
 DISTR_VERSION = os.environ.get("DISTR_VERSION", "3.8")
-BASE_URL = f"https://dl.irradium.org/irradium/packages/{ARCH}/{DISTR_VERSION}"
+UPSTREAM_MIRRORS = [
+    f"https://mirrors.dotsrc.org/irradium/packages/{ARCH}/{DISTR_VERSION}",
+    f"https://mirror.accum.se/mirror/irradium.org/packages/{ARCH}/{DISTR_VERSION}",
+    f"https://ftp.cc.uoc.gr/mirrors/linux/irradium/packages/{ARCH}/{DISTR_VERSION}",
+    f"https://dl.irradium.org/irradium/packages/{ARCH}/{DISTR_VERSION}",
+]
+
+
+def select_base_url():
+    custom = os.environ.get("UPSTREAM_URL")
+    candidates = [custom.rstrip("/")] if custom else UPSTREAM_MIRRORS
+    last_err = None
+    for candidate in candidates:
+        try:
+            url = f"{candidate}/core/"
+            with urllib.request.urlopen(url, timeout=10, context=SSL_CTX) as r:
+                if r.status == 200:
+                    return candidate
+        except Exception as e:
+            print(f"Mirror {candidate} unavailable ({e}), trying next...")
+            last_err = e
+    raise RuntimeError(f"All Irradium upstream mirrors failed; last error: {last_err}")
 
 CORE_WANTED = {
     "filesystem", "iana-etc", "tzdata", "glibc", "gcc", "binutils", "make",
@@ -91,8 +112,8 @@ OPT_WANTED = {
 }
 
 
-def fetch_listing(repo, wanted):
-    url = f"{BASE_URL}/{repo}/"
+def fetch_listing(base_url, repo, wanted):
+    url = f"{base_url}/{repo}/"
     req = urllib.request.urlopen(url, timeout=30, context=SSL_CTX)
     html = req.read().decode("utf-8", errors="replace")
     found = {}
@@ -138,11 +159,12 @@ def main():
     with open(UPSTREAM_PUBKEY_PATH, "w", encoding="utf-8") as f:
         f.write(IRRADIUM_PKG_GET_PUB)
 
-    print(f"Bootstrapping Irradium {DISTR_VERSION} ({ARCH}) from {BASE_URL} (TLS + signify verified)...")
+    base_url = select_base_url()
+    print(f"Bootstrapping Irradium {DISTR_VERSION} ({ARCH}) from {base_url} (TLS + signify verified)...")
     pkgs = {}
-    pkgs.update(fetch_listing("core", CORE_WANTED))
-    pkgs.update(fetch_listing("contrib", CONTRIB_WANTED))
-    pkgs.update(fetch_listing("opt", OPT_WANTED))
+    pkgs.update(fetch_listing(base_url, "core", CORE_WANTED))
+    pkgs.update(fetch_listing(base_url, "contrib", CONTRIB_WANTED))
+    pkgs.update(fetch_listing(base_url, "opt", OPT_WANTED))
 
     print(f"Downloading and verifying {len(pkgs)} packages...")
     downloaded = {}

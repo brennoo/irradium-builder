@@ -281,13 +281,21 @@ mkdir -p "$CACHE_DIR/sources" "$CACHE_DIR/packages" "$REPO_DIR"
 docker run -i --rm --platform "$DOCKER_PLATFORM" \
     -e SKIP_EXISTING="$SKIP_EXISTING" \
     -e MIRROR_URL="$MIRROR_DOMAIN/irradium/packages/$ARCH/$DISTR_VERSION" \
-    -e UPSTREAM_URL="https://dl.irradium.org/irradium/packages/$ARCH/$DISTR_VERSION" \
+    -e ARCH="$ARCH" \
+    -e DISTR_VERSION="$DISTR_VERSION" \
     -v "$PORTS_ROOT:/mnt/ports" \
     -v "$CACHE_DIR:/var/cache/pkgmk" \
     -v "$REPO_DIR:/repo" \
     -v "$KEYS_DIR:/etc/pkg-get" \
     "$IMAGE_NAME" /bin/bash -s -- "${TARGETS[@]}" <<'EOS'
 set -euo pipefail
+
+UPSTREAM_MIRRORS=(
+    "https://mirrors.dotsrc.org/irradium/packages/$ARCH/$DISTR_VERSION"
+    "https://mirror.accum.se/mirror/irradium.org/packages/$ARCH/$DISTR_VERSION"
+    "https://ftp.cc.uoc.gr/mirrors/linux/irradium/packages/$ARCH/$DISTR_VERSION"
+    "https://dl.irradium.org/irradium/packages/$ARCH/$DISTR_VERSION"
+)
 
 mkdir -p /var/cache/pkgmk/sources /var/cache/pkgmk/packages /tmp/pkgmk-work /usr/ports
 sed -i 's|PKGMK_WORK_DIR=.*|PKGMK_WORK_DIR="/tmp/pkgmk-work/$name"|' /etc/pkgmk.conf
@@ -387,14 +395,22 @@ sync_upstream_port() {
         return 0
     fi
 
-    echo "==> [UPSTREAM] Fetching $category/$pkg_file from ${UPSTREAM_URL}..."
-    if [[ "$(curl -o /dev/null --silent -Iw '%{http_code}' "${UPSTREAM_URL}/${category}/${encoded_pkg}")" != "200" ]]; then
-        echo "ERROR: [UPSTREAM] $category/$pkg_file not found on ${UPSTREAM_URL} — move '$name' to packages/build.txt to compile from source." >&2
+    local upstream_url=""
+    for candidate in "${UPSTREAM_MIRRORS[@]}"; do
+        if [[ "$(curl -o /dev/null --silent --connect-timeout 10 --max-time 20 -Iw '%{http_code}' "${candidate}/${category}/${encoded_pkg}")" == "200" ]]; then
+            upstream_url="$candidate"
+            break
+        fi
+    done
+
+    if [[ -z "$upstream_url" ]]; then
+        echo "ERROR: [UPSTREAM] $category/$pkg_file not found on any upstream mirror — move '$name' to packages/build.txt to compile from source." >&2
         exit 1
     fi
 
-    curl -fsSL "${UPSTREAM_URL}/${category}/${encoded_pkg}" -o "/var/cache/pkgmk/packages/$pkg_file"
-    curl -fsSL "${UPSTREAM_URL}/${category}/${encoded_pkg}.sig" -o "/var/cache/pkgmk/packages/${pkg_file}.upstream.sig"
+    echo "==> [UPSTREAM] Fetching $category/$pkg_file from ${upstream_url}..."
+    curl -fsSL --connect-timeout 10 "${upstream_url}/${category}/${encoded_pkg}" -o "/var/cache/pkgmk/packages/$pkg_file"
+    curl -fsSL --connect-timeout 10 "${upstream_url}/${category}/${encoded_pkg}.sig" -o "/var/cache/pkgmk/packages/${pkg_file}.upstream.sig"
     signify -p /tmp/irradium-upstream.pub -V -q -m "/var/cache/pkgmk/packages/$pkg_file" -x "/var/cache/pkgmk/packages/${pkg_file}.upstream.sig"
 
     if ! prt-get isinst "$name" >/dev/null 2>&1; then
