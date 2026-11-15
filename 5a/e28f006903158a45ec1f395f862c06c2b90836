@@ -1,0 +1,19 @@
+.github/workflows/vuln-scan.yml
+  s_25ca3f3da59f21::t_3fc0f1ca43309d 136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5ae28f006903158a45ec1f395f862c06c2b90836",
+  "prompts": {},
+  "sessions": {
+    "s_25ca3f3da59f21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "s_25ca3f3da59f21",
+        "model": "unknown"
+      },
+      "human_author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
