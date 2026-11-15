@@ -1,0 +1,8 @@
+origin=irradium-contrib/haproxy
+origin_commit=aeaa36c49834de89422766d2334c88e7b771013a
+origin_version=3.3.0-1
+reason=Vulnerable to 6 CVEs in 3.3.0; bump to 3.4.7 to fix all
+cves=CVE-2026-90678,CVE-2026-55204,CVE-2026-55203,CVE-2026-26081,CVE-2026-26080,CVE-2026-33555
+retire_when=upstream_version>=3.4.7
+was_prebuilt=yes
+created=2026-11-15

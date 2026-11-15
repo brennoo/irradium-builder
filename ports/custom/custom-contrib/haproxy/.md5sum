@@ -1,0 +1,5 @@
+6fc7aa31c7660600722127ead3bc25e8  0001-Use-CFLAGS-and-LDFLAGS-when-building-admin.patch
+ca89cbc60036eec9671ef3b6fb222759  haproxy-3.4.7.tar.gz
+f2fcc4cf74ed731a0ee1ed589427af72  haproxy.cfg.example
+3736b5aea66239989e3c935aa67499ef  haproxy.logrotate
+100a4035a95b6f79f2aebf0676cba9f3  rc.haproxy

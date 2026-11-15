@@ -597,7 +597,7 @@ libblockdev	-	-		no NVD product
 udisks2	uchicago	udisks
 openssh	openbsd	openssh	p-suffix-to-update
 fuse3	-	-		no NVD product
-lua53	-	-		no NVD product
+lua53	lua	lua
 boost	boost	boost
 cppunit	-	-		no NVD product
 librevenge	-	-		no NVD product

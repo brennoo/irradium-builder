@@ -150,7 +150,6 @@ gtk-engine-murrine
 gtksourceview4
 gtkspell3
 gvfs
-haproxy
 hostapd
 iozone
 iperf3

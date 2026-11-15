@@ -6,3 +6,5 @@ lua
 libpcap
 nmap
 notqmail
+lua53
+haproxy

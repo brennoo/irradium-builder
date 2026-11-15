@@ -366,6 +366,7 @@ def run_scan(
         targets=targets,
         include_all=include_all,
         use_mirror=not offline,
+        only_published=not bool(targets),
     )
     if missing_ports:
         print(

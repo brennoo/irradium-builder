@@ -12,6 +12,8 @@ import subprocess
 import urllib.parse
 import urllib.request
 
+from . import versions
+
 BUILDER_DIR = pathlib.Path(__file__).resolve().parent.parent
 ROOT_DIR = pathlib.Path(os.environ.get("ROOT_DIR", str(BUILDER_DIR.parent))).resolve()
 PORTS_ROOT = pathlib.Path(os.environ.get("PORTS_ROOT", str(ROOT_DIR / "ports"))).resolve()
@@ -317,75 +319,168 @@ def parse_pkg_filename(filename: str) -> tuple[str, str, str] | None:
 
 def scan_local_repo(
     repo_root: pathlib.Path | None = None,
-    arch: str = DEFAULT_ARCH,
+    arch: str | None = None,
     distr: str = DEFAULT_DISTR_VERSION,
 ) -> dict[str, tuple[str, str, str]]:
     """Scan local repo/irradium/packages/<arch>/<ver>/<cat>/ for binary package archives.
 
+    When arch is None or "*", scans all architecture directories under repo/irradium/packages/
+    and keeps the lowest (older) <version>-<release> if a package differs across architectures.
     Returns dict mapping pkg_name -> (version, release, category).
     """
-    root = (repo_root or REPO_ROOT) / "irradium" / "packages" / arch / distr
+    pkgs_base = (repo_root or REPO_ROOT) / "irradium" / "packages"
     found: dict[str, tuple[str, str, str]] = {}
-    if not root.is_dir():
+    if not pkgs_base.is_dir():
         return found
-    for cat in CATEGORIES:
-        cat_dir = root / cat
-        if not cat_dir.is_dir():
+
+    if arch and arch != "*":
+        arch_dirs = [pkgs_base / arch]
+    else:
+        arch_dirs = sorted(
+            (d for d in pkgs_base.iterdir() if d.is_dir()),
+            key=lambda p: p.name,
+        )
+
+    per_arch: dict[str, dict[str, tuple[str, str, str]]] = {}
+    for arch_dir in arch_dirs:
+        root = arch_dir / distr
+        if not root.is_dir():
             continue
-        for entry in sorted(cat_dir.iterdir(), key=lambda p: p.name):
-            if not entry.is_file() or entry.name.endswith(".sig"):
+        arch_map = per_arch.setdefault(arch_dir.name, {})
+        for cat in CATEGORIES:
+            cat_dir = root / cat
+            if not cat_dir.is_dir():
                 continue
-            parsed = parse_pkg_filename(entry.name)
-            if parsed:
+            for entry in sorted(cat_dir.iterdir(), key=lambda p: p.name):
+                if not entry.is_file() or entry.name.endswith(".sig"):
+                    continue
+                parsed = parse_pkg_filename(entry.name)
+                if not parsed:
+                    continue
                 name, ver, rel = parsed
+                if name in arch_map:
+                    old_ver, old_rel, _ = arch_map[name]
+                    if versions.vercmp(f"{ver}-{rel}", f"{old_ver}-{old_rel}") > 0:
+                        arch_map[name] = (ver, rel, cat)
+                else:
+                    arch_map[name] = (ver, rel, cat)
+
+    for arch_map in per_arch.values():
+        for name, (ver, rel, cat) in arch_map.items():
+            if name in found:
+                old_ver, old_rel, _ = found[name]
+                if versions.vercmp(f"{ver}-{rel}", f"{old_ver}-{old_rel}") < 0:
+                    found[name] = (ver, rel, cat)
+            else:
                 found[name] = (ver, rel, cat)
     return found
 
 
 _MIRROR_INDEX_CACHE: dict[tuple[str, str, str], dict[str, tuple[str, str, str]]] = {}
 
+_ROOT_INDEX_LINK_RE = re.compile(
+    r'href="[^"]*?/irradium/packages/([^/]+)/([^/]+)/([^/]+)/([^"]+\.pkg\.tar\.[a-z0-9]+)"'
+)
+
 
 def fetch_mirror_index(
     mirror_domain: str = DEFAULT_MIRROR_DOMAIN,
-    arch: str = DEFAULT_ARCH,
+    arch: str | None = None,
     distr: str = DEFAULT_DISTR_VERSION,
-    timeout: float = 10.0,
+    timeout: float = 15.0,
 ) -> dict[str, tuple[str, str, str]]:
-    """Fetch binary package versions from mirror index.html across categories.
+    """Fetch published binary package versions from the mirror across all architectures and categories.
+
+    First queries the root mirror index (`{mirror_domain}/index.html`), which lists all published
+    files across all architectures (`/irradium/packages/<arch>/<distr>/<cat>/<pkg>`), and falls back
+    to per-category `index.html` pages if the root index has no matching links.
+    If a package exists in multiple architectures with different versions, keeps the lowest (older)
+    `<version>-<release>` so vulnerabilities affecting an older arch build are not masked.
 
     Returns dict mapping pkg_name -> (version, release, category).
     """
-    cache_key = (mirror_domain.rstrip("/"), arch, distr)
+    arch_key = arch if (arch and arch != "*") else "*"
+    cache_key = (mirror_domain.rstrip("/"), arch_key, distr)
     if cache_key in _MIRROR_INDEX_CACHE:
         return _MIRROR_INDEX_CACHE[cache_key]
 
-    base = f"{mirror_domain.rstrip('/')}/irradium/packages/{arch}/{distr}"
     found: dict[str, tuple[str, str, str]] = {}
+    per_arch: dict[str, dict[str, tuple[str, str, str]]] = {}
 
-    def _fetch_cat(cat: str) -> tuple[str, dict[str, tuple[str, str, str]]]:
-        cat_items: dict[str, tuple[str, str, str]] = {}
-        for suffix in ("index.html", ""):
-            url = f"{base}/{cat}/{suffix}"
-            try:
-                req = urllib.request.Request(url, headers={"User-Agent": "irradium-vulntool/1.0"})
-                with urllib.request.urlopen(req, timeout=timeout, context=SSL_CTX) as resp:
-                    if resp.status != 200:
-                        continue
-                    html = resp.read().decode("utf-8", errors="replace")
-                for m in re.finditer(r'href="([^"]+\.pkg\.tar\.[a-z0-9]+)"', html):
-                    parsed = parse_pkg_filename(m.group(1))
-                    if parsed:
-                        name, ver, rel = parsed
-                        cat_items[name] = (ver, rel, cat)
-                if cat_items:
-                    break
-            except Exception:
-                continue
-        return cat, cat_items
+    def _record_arch(a: str, name: str, ver: str, rel: str, cat: str) -> None:
+        arch_map = per_arch.setdefault(a, {})
+        if name in arch_map:
+            old_ver, old_rel, _ = arch_map[name]
+            if versions.vercmp(f"{ver}-{rel}", f"{old_ver}-{old_rel}") > 0:
+                arch_map[name] = (ver, rel, cat)
+        else:
+            arch_map[name] = (ver, rel, cat)
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
-        for _cat, items in ex.map(_fetch_cat, CATEGORIES):
-            found.update(items)
+    # 1. Query root index.html which lists all published files across all architectures
+    for root_suffix in ("/index.html", "/"):
+        root_url = f"{mirror_domain.rstrip('/')}{root_suffix}"
+        try:
+            req = urllib.request.Request(root_url, headers={"User-Agent": "irradium-vulntool/1.0"})
+            with urllib.request.urlopen(req, timeout=timeout, context=SSL_CTX) as resp:
+                if resp.status != 200:
+                    continue
+                html = resp.read().decode("utf-8", errors="replace")
+            for m in _ROOT_INDEX_LINK_RE.finditer(html):
+                m_arch, m_distr, m_cat, m_file = m.group(1), m.group(2), m.group(3), m.group(4)
+                if m_distr != distr:
+                    continue
+                if arch_key != "*" and m_arch != arch_key:
+                    continue
+                parsed = parse_pkg_filename(m_file)
+                if parsed:
+                    name, ver, rel = parsed
+                    _record_arch(m_arch, name, ver, rel, m_cat)
+            if per_arch:
+                break
+        except Exception:
+            continue
+
+    # 2. Fallback to per-arch, per-category index.html if root index yielded nothing
+    if not per_arch:
+        arches = [arch_key] if arch_key != "*" else ["riscv64", "aarch64"]
+        cat_targets = [(a, c) for a in arches for c in CATEGORIES]
+
+        def _fetch_cat(target: tuple[str, str]) -> list[tuple[str, str, str, str, str]]:
+            a, cat = target
+            base = f"{mirror_domain.rstrip('/')}/irradium/packages/{a}/{distr}"
+            cat_items: list[tuple[str, str, str, str, str]] = []
+            for suffix in ("index.html", ""):
+                url = f"{base}/{cat}/{suffix}"
+                try:
+                    req = urllib.request.Request(url, headers={"User-Agent": "irradium-vulntool/1.0"})
+                    with urllib.request.urlopen(req, timeout=timeout, context=SSL_CTX) as resp:
+                        if resp.status != 200:
+                            continue
+                        html = resp.read().decode("utf-8", errors="replace")
+                    for m in re.finditer(r'href="([^"]+\.pkg\.tar\.[a-z0-9]+)"', html):
+                        parsed = parse_pkg_filename(m.group(1))
+                        if parsed:
+                            name, ver, rel = parsed
+                            cat_items.append((a, name, ver, rel, cat))
+                    if cat_items:
+                        break
+                except Exception:
+                    continue
+            return cat_items
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
+            for items in ex.map(_fetch_cat, cat_targets):
+                for a, name, ver, rel, cat in items:
+                    _record_arch(a, name, ver, rel, cat)
+
+    for arch_map in per_arch.values():
+        for name, (ver, rel, cat) in arch_map.items():
+            if name in found:
+                old_ver, old_rel, _ = found[name]
+                if versions.vercmp(f"{ver}-{rel}", f"{old_ver}-{old_rel}") < 0:
+                    found[name] = (ver, rel, cat)
+            else:
+                found[name] = (ver, rel, cat)
 
     _MIRROR_INDEX_CACHE[cache_key] = found
     return found
@@ -480,16 +575,18 @@ def resolve_ports(
     include_all: bool = False,
     ports_root: pathlib.Path | None = None,
     repo_root: pathlib.Path | None = None,
-    arch: str = DEFAULT_ARCH,
+    arch: str | None = None,
     distr: str = DEFAULT_DISTR_VERSION,
     mirror_domain: str = DEFAULT_MIRROR_DOMAIN,
     use_mirror: bool = True,
+    only_published: bool = False,
 ) -> tuple[list[PortInfo], list[str]]:
     """Resolve target packages (and optionally their dependency closure / repo packages).
 
-    - Built ports (packages/build.txt or custom-* overrides): version resolved by sourcing Pkgfile in bash.
-    - Prebuilt ports (packages/upstream.txt and dependencies): version resolved from local repo/
-      or mirror index.html binary filenames, falling back to sourcing Pkgfile if not in repo/mirror.
+    When `only_published=True` (used for mirror/repo vulnerability scans when no explicit CLI
+    targets are passed), discovers every package actually published in `local_repo` or `mirror_repo`
+    across all architectures and categories, regardless of whether it came from `build.txt`,
+    `upstream.txt`, or elsewhere, and skips unavailable / non-published-yet packages.
     """
     build_list = read_package_list(BUILD_TXT)
     upstream_list = read_package_list(UPSTREAM_TXT)
@@ -503,6 +600,7 @@ def resolve_ports(
         if use_mirror
         else {}
     )
+    published: dict[str, tuple[str, str, str]] = {**mirror_repo, **local_repo}
 
     ordered_names: list[str] = []
     seen_names: set[str] = set()
@@ -517,7 +615,21 @@ def resolve_ports(
             _add(t)
         if include_all:
             for dep in resolve_dependency_closure(ordered_names, port_index=port_index):
-                _add(dep)
+                if not only_published or dep in published:
+                    _add(dep)
+    elif only_published and published:
+        # Consider everything that ends up in the mirror/repo across all arches and sources,
+        # and skip unavailable / non-published-yet packages.
+        for p in upstream_list:
+            if p in published:
+                _add(p)
+        for p in build_list:
+            if p in published:
+                _add(p)
+        for repo_pkg in sorted(local_repo.keys()):
+            _add(repo_pkg)
+        for mir_pkg in sorted(mirror_repo.keys()):
+            _add(mir_pkg)
     else:
         for p in upstream_list:
             _add(p)
@@ -538,7 +650,21 @@ def resolve_ports(
     for name in ordered_names:
         entry = port_index.get(name)
         if entry is None:
-            missing.append(name)
+            if name in published:
+                pub_ver, pub_rel, pub_cat = published[name]
+                matched_entries.append(
+                    _IndexedPort(
+                        name=name,
+                        collection=f"mirror-{pub_cat}",
+                        category=pub_cat,
+                        port_dir= (ports_root or PORTS_ROOT) / name,
+                        description="",
+                        url="",
+                        depends=[],
+                    )
+                )
+            else:
+                missing.append(name)
             continue
         matched_entries.append(entry)
         to_source.append(entry.port_dir)
@@ -556,17 +682,25 @@ def resolve_ports(
             source_kind = "dependency"
 
         # Determine authoritative version:
-        # Built ports use Pkgfile sourcing; upstream/dependency ports prefer local repo/ then mirror index.html.
-        if source_kind == "build":
-            ver, rel, ver_src = pkg_ver, pkg_rel, "pkgfile"
-        elif entry.name in local_repo:
+        # When scanning published mirror/repo packages (or for non-built packages), prefer
+        # local repo/ then mirror index.html binary filenames. For explicit local build target
+        # checks before publishing, fall back to sourcing Pkgfile.
+        if entry.name in local_repo:
             ver, rel, _ = local_repo[entry.name]
             ver_src = "repo"
+        elif only_published and entry.name in mirror_repo:
+            ver, rel, _ = mirror_repo[entry.name]
+            ver_src = "mirror"
+        elif source_kind == "build":
+            ver, rel, ver_src = pkg_ver, pkg_rel, "pkgfile"
         elif entry.name in mirror_repo:
             ver, rel, _ = mirror_repo[entry.name]
             ver_src = "mirror"
         else:
             ver, rel, ver_src = pkg_ver, pkg_rel, "pkgfile"
+
+        if not pkg_ver:
+            pkg_ver, pkg_rel = ver, rel
 
         resolved.append(
             PortInfo(
