@@ -65,7 +65,6 @@ SSL_CTX.load_verify_locations(cadata=MISSING_INTERMEDIATES_PEM)
 ARCH = os.environ.get("ARCH", "riscv64")
 DISTR_VERSION = os.environ.get("DISTR_VERSION", "3.8")
 UPSTREAM_MIRRORS = [
-    f"https://mirrors.dotsrc.org/irradium/packages/{ARCH}/{DISTR_VERSION}",
     f"https://mirror.accum.se/mirror/irradium.org/packages/{ARCH}/{DISTR_VERSION}",
     f"https://ftp.cc.uoc.gr/mirrors/linux/irradium/packages/{ARCH}/{DISTR_VERSION}",
     f"https://dl.irradium.org/irradium/packages/{ARCH}/{DISTR_VERSION}",

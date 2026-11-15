@@ -291,13 +291,6 @@ docker run -i --rm --platform "$DOCKER_PLATFORM" \
     "$IMAGE_NAME" /bin/bash -s -- "${TARGETS[@]}" <<'EOS' || BUILD_STATUS=$?
 set -euo pipefail
 
-UPSTREAM_MIRRORS=(
-    "https://mirrors.dotsrc.org/irradium/packages/$ARCH/$DISTR_VERSION"
-    "https://mirror.accum.se/mirror/irradium.org/packages/$ARCH/$DISTR_VERSION"
-    "https://ftp.cc.uoc.gr/mirrors/linux/irradium/packages/$ARCH/$DISTR_VERSION"
-    "https://dl.irradium.org/irradium/packages/$ARCH/$DISTR_VERSION"
-)
-
 mkdir -p /var/cache/pkgmk/sources /var/cache/pkgmk/packages /tmp/pkgmk-work /usr/ports
 sed -i 's|PKGMK_WORK_DIR=.*|PKGMK_WORK_DIR="/tmp/pkgmk-work/$name"|' /etc/pkgmk.conf
 
@@ -379,51 +372,6 @@ check_existing() {
     return 1
 }
 
-sync_upstream_port() {
-    local port_dir="$1"
-    local collection
-    collection="$(basename "$(dirname "$port_dir")")"
-    local category="${collection##*-}"
-
-    cd "$port_dir"
-    # shellcheck disable=SC1091
-    source Pkgfile
-    local pkg_file="${name}#${version}-${release}.pkg.tar.gz"
-    local encoded_pkg="${name}%23${version}-${release}.pkg.tar.gz"
-    mkdir -p "/repo/$category"
-
-    if check_existing "$category" "$name" "$pkg_file" "$encoded_pkg" "UPSTREAM"; then
-        return 0
-    fi
-
-    local upstream_url=""
-    for candidate in "${UPSTREAM_MIRRORS[@]}"; do
-        if [[ "$(curl -o /dev/null --silent --connect-timeout 10 --max-time 20 -Iw '%{http_code}' "${candidate}/${category}/${encoded_pkg}")" == "200" ]]; then
-            upstream_url="$candidate"
-            break
-        fi
-    done
-
-    if [[ -z "$upstream_url" ]]; then
-        echo "ERROR: [UPSTREAM] $category/$pkg_file not found on any upstream mirror — move '$name' to packages/build.txt to compile from source." >&2
-        exit 1
-    fi
-
-    echo "==> [UPSTREAM] Fetching $category/$pkg_file from ${upstream_url}..."
-    curl -fsSL --connect-timeout 10 "${upstream_url}/${category}/${encoded_pkg}" -o "/var/cache/pkgmk/packages/$pkg_file"
-    curl -fsSL --connect-timeout 10 "${upstream_url}/${category}/${encoded_pkg}.sig" -o "/var/cache/pkgmk/packages/${pkg_file}.upstream.sig"
-    signify -p /tmp/irradium-upstream.pub -V -q -m "/var/cache/pkgmk/packages/$pkg_file" -x "/var/cache/pkgmk/packages/${pkg_file}.upstream.sig"
-
-    if ! prt-get isinst "$name" >/dev/null 2>&1; then
-        pkgadd "/var/cache/pkgmk/packages/$pkg_file"
-    fi
-
-    cp -f "/var/cache/pkgmk/packages/$pkg_file" "/repo/$category/$pkg_file"
-    signify -s /etc/pkg-get/pkg-get.sec -S -m "/repo/$category/$pkg_file" -x "/repo/$category/${pkg_file}.sig"
-    signify -p /etc/pkg-get/pkg-get.pub -V -q -m "/repo/$category/$pkg_file" -x "/repo/$category/${pkg_file}.sig"
-    echo "==> [UPSTREAM] Verified & re-signed: $category/$pkg_file"
-}
-
 build_single_port() {
     local port_dir="$1"
     local collection
@@ -458,8 +406,243 @@ build_single_port() {
     echo "==> [BUILD] Built & signed: $category/$pkg_file"
 }
 
+# Fast parallel sync for all upstream:* targets (fetches mirror index once, resolves
+# dependency closure, skips unavailable arch packages, and verifies + re-signs in parallel)
+python3 - "$@" <<'PYEOF'
+import concurrent.futures
+import os
+import pathlib
+import re
+import shutil
+import ssl
+import subprocess
+import sys
+import urllib.parse
+import urllib.request
+
+targets = [t.split(":", 1)[1].rstrip("/") for t in sys.argv[1:] if t.startswith("upstream:")]
+if not targets:
+    sys.exit(0)
+
+arch = os.environ.get("ARCH", "riscv64")
+distr = os.environ.get("DISTR_VERSION", "3.8")
+skip_existing = os.environ.get("SKIP_EXISTING", "no") == "yes"
+mirror_url = os.environ["MIRROR_URL"].rstrip("/")
+
+upstream_mirrors = [
+    f"https://mirror.accum.se/mirror/irradium.org/packages/{arch}/{distr}",
+    f"https://ftp.cc.uoc.gr/mirrors/linux/irradium/packages/{arch}/{distr}",
+    f"https://dl.irradium.org/irradium/packages/{arch}/{distr}",
+]
+
+ssl_ctx = ssl.create_default_context()
+extra_ca = pathlib.Path("/usr/local/share/ca-certificates/zerossl-sectigo-intermediates.crt")
+if extra_ca.is_file():
+    ssl_ctx.load_verify_locations(cafile=str(extra_ca))
+
+active_upstream = None
+for cand in upstream_mirrors:
+    try:
+        with urllib.request.urlopen(f"{cand}/core/", timeout=10, context=ssl_ctx) as r:
+            if r.status == 200:
+                active_upstream = cand
+                break
+    except Exception:
+        continue
+
+if not active_upstream:
+    print("ERROR: All upstream Irradium mirrors are unreachable", file=sys.stderr)
+    sys.exit(1)
+
+categories = ["core", "opt", "xorg", "xfce", "contrib"]
+
+# 1. Index packages available on upstream mirror (fail hard if any category fails or is empty)
+upstream_index = {}  # pkg_name -> (upstream_cat, fname, encoded_fname)
+def fetch_upstream_cat(cat):
+    url = f"{active_upstream}/{cat}/"
+    with urllib.request.urlopen(url, timeout=30, context=ssl_ctx) as r:
+        if r.status != 200:
+            raise RuntimeError(f"HTTP {r.status} fetching {url}")
+        html = r.read().decode("utf-8", errors="replace")
+    found = {}
+    for m in re.finditer(r'href="([^"]+\.pkg\.tar\.gz)"', html):
+        raw_href = m.group(1).split("/")[-1]
+        fname = urllib.parse.unquote(raw_href)
+        name = fname.split("#", 1)[0]
+        encoded = urllib.parse.quote(fname)
+        found[name] = (cat, fname, encoded)
+    if not found:
+        raise RuntimeError(f"Upstream category listing {url} returned 0 packages")
+    return cat, found
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
+    for cat, found in ex.map(fetch_upstream_cat, categories):
+        for name, info in found.items():
+            upstream_index[name] = info
+
+# 2. Index packages already published on MIRROR_URL (if skip_existing)
+mirror_existing = set()  # "cat/fname"
+if skip_existing:
+    def fetch_mirror_cat(cat):
+        for suffix in ("index.html", ""):
+            url = f"{mirror_url}/{cat}/{suffix}"
+            try:
+                with urllib.request.urlopen(url, timeout=10, context=ssl_ctx) as r:
+                    html = r.read().decode("utf-8", errors="replace")
+                items = set()
+                for m in re.finditer(r'href="([^"]+\.pkg\.tar\.gz)"', html):
+                    fname = urllib.parse.unquote(m.group(1).split("/")[-1])
+                    items.add(f"{cat}/{fname}")
+                return items
+            except Exception:
+                continue
+        return set()
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
+        for items in ex.map(fetch_mirror_cat, categories):
+            mirror_existing |= items
+
+# 3. Scan port trees in /usr/ports priority order for category & dependencies
+prt_order = [
+    ("core", "/usr/ports/custom-core"),
+    ("opt", "/usr/ports/custom-opt"),
+    ("xorg", "/usr/ports/custom-xorg"),
+    ("xfce", "/usr/ports/custom-xfce"),
+    ("contrib", "/usr/ports/custom-contrib"),
+    ("core", "/usr/ports/irradium-core"),
+    ("opt", "/usr/ports/irradium-opt"),
+    ("xorg", "/usr/ports/irradium-xorg"),
+    ("xfce", "/usr/ports/irradium-xfce"),
+    ("contrib", "/usr/ports/irradium-contrib"),
+    ("core", "/usr/ports/core"),
+    ("opt", "/usr/ports/opt"),
+    ("xorg", "/usr/ports/xorg"),
+    ("contrib", "/usr/ports/contrib"),
+]
+
+port_map = {}  # pkg_name -> (target_cat, deps_list)
+for cat, dpath in prt_order:
+    pdir = pathlib.Path(dpath)
+    if not pdir.is_dir():
+        continue
+    for child in pdir.iterdir():
+        pkgfile = child / "Pkgfile"
+        if child.name not in port_map and pkgfile.is_file():
+            deps = []
+            try:
+                for line in pkgfile.read_text(encoding="utf-8", errors="replace").splitlines():
+                    m = re.match(r"^#\s*Depends\s+on\s*:\s*(.*)$", line, re.I)
+                    if m:
+                        deps = [x.strip() for x in re.split(r"[, \t]+", m.group(1)) if x.strip()]
+                        break
+            except Exception:
+                pass
+            port_map[child.name] = (cat, deps)
+
+# Check which packages are already installed in base rootfs (/var/lib/pkg/db)
+installed_base = set()
+db_file = pathlib.Path("/var/lib/pkg/db")
+if db_file.is_file():
+    lines = db_file.read_text(encoding="utf-8", errors="replace").splitlines()
+    i = 0
+    while i < len(lines):
+        pkgname = lines[i].strip()
+        if pkgname:
+            installed_base.add(pkgname)
+        i += 2
+        while i < len(lines) and lines[i].strip():
+            i += 1
+        i += 1
+
+def resolve_dep_order(root_pkg):
+    order = []
+    visited = set()
+    def dfs(pkg):
+        if pkg in visited:
+            return
+        visited.add(pkg)
+        if pkg in port_map:
+            for dep in port_map[pkg][1]:
+                if dep in port_map and dep not in installed_base:
+                    dfs(dep)
+        order.append(pkg)
+    dfs(root_pkg)
+    return order
+
+to_sync = []
+queued = set()
+
+for t in targets:
+    pkg_name = t.split("/")[-1]
+    if pkg_name not in port_map:
+        print(f"==> [UPSTREAM:UNAVAILABLE] {pkg_name} not found in port trees (skipping)", flush=True)
+        continue
+    if pkg_name not in upstream_index:
+        print(f"==> [UPSTREAM:UNAVAILABLE] {pkg_name} has no pre-built {arch} binary on upstream mirror (skipping)", flush=True)
+        continue
+    dep_chain = resolve_dep_order(pkg_name)
+    missing_deps = [d for d in dep_chain if d not in upstream_index]
+    if missing_deps:
+        print(f"==> [UPSTREAM:UNAVAILABLE] {pkg_name} missing dependency {missing_deps[0]} on upstream {arch} mirror (skipping)", flush=True)
+        continue
+    for d in dep_chain:
+        if d not in queued:
+            queued.add(d)
+            to_sync.append(d)
+
+def sync_one(pkg_name):
+    upstream_cat, pkg_file, encoded_pkg = upstream_index[pkg_name]
+    # Preserve upstream category so pkg-get finds dependencies in the collection they were built in,
+    # or use port_map category if matching
+    category = port_map[pkg_name][0] if pkg_name in port_map else upstream_cat
+    repo_cat_dir = pathlib.Path(f"/repo/{category}")
+    repo_cat_dir.mkdir(parents=True, exist_ok=True)
+    dest_pkg = repo_cat_dir / pkg_file
+    dest_sig = repo_cat_dir / f"{pkg_file}.sig"
+
+    if skip_existing:
+        if dest_pkg.is_file() and dest_sig.is_file():
+            return f"==> [UPSTREAM:SKIP] {category}/{pkg_file} already exists locally"
+        if f"{category}/{pkg_file}" in mirror_existing:
+            return f"==> [UPSTREAM:SKIP] {category}/{pkg_file} already published on {mirror_url}"
+
+    cache_pkg = pathlib.Path(f"/var/cache/pkgmk/packages/{pkg_file}")
+    cache_sig = pathlib.Path(f"/var/cache/pkgmk/packages/{pkg_file}.upstream.sig")
+
+    pkg_url = f"{active_upstream}/{upstream_cat}/{encoded_pkg}"
+    sig_url = f"{pkg_url}.sig"
+
+    with urllib.request.urlopen(pkg_url, timeout=120, context=ssl_ctx) as r, open(cache_pkg, "wb") as f:
+        shutil.copyfileobj(r, f)
+    with urllib.request.urlopen(sig_url, timeout=30, context=ssl_ctx) as r, open(cache_sig, "wb") as f:
+        shutil.copyfileobj(r, f)
+
+    subprocess.run(
+        ["signify", "-p", "/tmp/irradium-upstream.pub", "-V", "-q", "-m", str(cache_pkg), "-x", str(cache_sig)],
+        check=True,
+    )
+    shutil.copy2(cache_pkg, dest_pkg)
+    subprocess.run(
+        ["signify", "-s", "/etc/pkg-get/pkg-get.sec", "-S", "-m", str(dest_pkg), "-x", str(dest_sig)],
+        check=True,
+    )
+    subprocess.run(
+        ["signify", "-p", "/etc/pkg-get/pkg-get.pub", "-V", "-q", "-m", str(dest_pkg), "-x", str(dest_sig)],
+        check=True,
+    )
+    # Remove cached archive after copying to /repo to keep container disk usage low
+    cache_pkg.unlink(missing_ok=True)
+    cache_sig.unlink(missing_ok=True)
+    return f"==> [UPSTREAM] Verified & re-signed: {category}/{pkg_file}"
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:
+    for msg in ex.map(sync_one, to_sync):
+        print(msg, flush=True)
+PYEOF
+
 for item in "$@"; do
     mode="${item%%:*}"
+    [[ "$mode" == "upstream" ]] && continue
     target="${item#*:}"
     target="${target%/}"
 
@@ -494,11 +677,7 @@ for item in "$@"; do
             if [[ "$line" =~ \[\ \]\ ([^[:space:]]+) ]]; then
                 dep_pkg="${BASH_REMATCH[1]}"
                 dep_path="$(prt-get path "$dep_pkg")"
-                if [[ "$mode" == "upstream" ]]; then
-                    sync_upstream_port "$dep_path" </dev/null
-                else
-                    build_single_port "$dep_path" </dev/null
-                fi
+                build_single_port "$dep_path" </dev/null
                 if [[ "$dep_pkg" == "$pkg_name" ]]; then
                     processed_target="yes"
                 fi
@@ -506,11 +685,7 @@ for item in "$@"; do
         done <<< "$deps_output"
     fi
     if [[ "$processed_target" == "no" ]]; then
-        if [[ "$mode" == "upstream" ]]; then
-            sync_upstream_port "$port_path" </dev/null
-        else
-            build_single_port "$port_path" </dev/null
-        fi
+        build_single_port "$port_path" </dev/null
     fi
 done
 
