@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "ntp",
+    "version": "*",
+    "cve": "CVE-2019-11331",
+    "status": "not_affected",
+    "justification": "inline_mitigations_already_exist",
+    "note": "Disputed RFC 5905 protocol behavior (source port 123 reuse); upstream NTP and distros classify as won't-fix",
+    "timestamp": "2026-11-15T18:43:23Z"
+  }
+]

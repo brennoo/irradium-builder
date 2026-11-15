@@ -7,5 +7,7 @@ keys/*.sec
 *.sec
 .env
 
-# OS metadata
+# OS & Python bytecode metadata
 .DS_Store
+__pycache__/
+*.py[cod]

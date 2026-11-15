@@ -1,0 +1,738 @@
+# Irradium 3.8 NVD CPE 2.3 dictionary map
+# Format: <pkg>	<vendor>	<product>	<version_xform>	<notes>
+# Every package in packages/build.txt, packages/upstream.txt, and their
+# dependency closure must have an entry here. Use "-" for vendor and product
+# when no NVD CPE product exists.
+#
+# Supported version_xform values:
+#   none (or empty / -)  use version as-is
+#   p-suffix-to-update   4.2.8p18 -> version 4.2.8, update p18
+#   underscore-to-dot    1_2_3 -> 1.2.3
+#   strip-prefix:<s>     drop leading prefix <s>
+git	git-scm	git
+bind	isc	bind
+unbound	nlnetlabs	unbound
+ntp	ntp	ntp	p-suffix-to-update
+bindutils	isc	bind		built from the bind source tarball
+libssh2	libssh2	libssh2
+bash	gnu	bash
+binutils	gnu	binutils
+bonding	-	-		Linux kernel bonding configuration script
+cmake	cmake_project	cmake
+db	oracle	berkeley_db
+dcron	-	-		no NVD product
+dhcpcd	dhcpcd_project	dhcpcd
+eudev	-	-		no NVD product
+filesystem	-	-		Irradium base filesystem layout
+gcc	gnu	gcc
+gdbm	gnu	gdbm
+gettext	gnu	gettext
+glibc	gnu	glibc
+gzip	gnu	gzip
+iproute2	iproute2_project	iproute2
+kbd	kbd-project	kbd
+libgmp	gmplib	gmp
+libpcre	pcre	pcre
+m4	gnu	m4
+macvlan	-	-		Linux kernel macvlan configuration script
+mlocate	-	-		no NVD product
+pkgconf	pkgconf	pkgconf
+pkgutils	-	-		CRUX package management utilities
+ports	-	-		CRUX ports tree tools
+prt-get	-	-		CRUX port manager
+rc	-	-		CRUX init scripts
+vlan	-	-		Linux kernel vlan configuration script
+aspell	gnu	aspell
+compiler-rt	llvm	compiler-rt
+dbus	freedesktop	dbus
+efibootmgr	-	-		no NVD product
+efivar	-	-		no NVD product
+ffmpeg	ffmpeg	ffmpeg
+gobject-introspection	-	-		no NVD product
+grub2	gnu	grub2
+grub2-efi	gnu	grub2		built from the grub2 source tarball
+harfbuzz	harfbuzz_project	harfbuzz
+hyphen	-	-		no NVD product
+libart_lgpl	-	-		no NVD product
+libjpeg-turbo	libjpeg-turbo	libjpeg-turbo
+libkeybinder3	-	-		no NVD product
+libmng	-	-		no NVD product
+libsdl	libsdl	simple_directmedia_layer
+liburcu	-	-		no NVD product
+libxklavier	-	-		no NVD product
+lightdm	lightdm_project	lightdm
+lightdm-gtk-greeter	-	-		no NVD product
+llvm	llvm	llvm
+mc	midnight-commander	midnight_commander
+medit	-	-		no NVD product
+nodejs	nodejs	node.js
+pango-compat	gnome	pango
+php-zip	php	php		built from the php source tarball
+pkg-get	-	-		Irradium binary package manager
+qt5	qt	qt
+qt6-base	qt	qt
+rust	rust-lang	rust
+slim	-	-		no NVD product
+startup-notification	-	-		no NVD product
+strace	-	-		no NVD product
+wpa_supplicant	w1.fi	wpa_supplicant
+yasm	yasm_project	yasm
+zip	-	-		no NVD product
+mesa	mesa3d	mesa
+xorg-xcb-util-xrm	-	-		no NVD product
+xorg-xf86-video-fbdev	-	-		no NVD product
+Greybird	-	-		GTK theme; no NVD product
+elementary-xfce	-	-		Icon theme; no NVD product
+exo	xfce	exo
+garcon	-	-		no NVD product
+libxfce4ui	-	-		no NVD product
+libxfce4util	-	-		no NVD product
+libxfce4windowing	-	-		no NVD product
+mousepad	-	-		no NVD product
+ristretto	-	-		no NVD product
+thunar	xfce	thunar
+thunar-volman	-	-		no NVD product
+tumbler	-	-		no NVD product
+xfce4-alsa-plugin	-	-		no NVD product
+xfce4-appfinder	-	-		no NVD product
+xfce4-clipman-plugin	-	-		no NVD product
+xfce4-dev-tools	-	-		no NVD product
+xfce4-mixer	-	-		no NVD product
+xfce4-notifyd	-	-		no NVD product
+xfce4-panel	-	-		no NVD product
+xfce4-panel-profiles	-	-		no NVD product
+xfce4-power-manager	-	-		no NVD product
+xfce4-pulseaudio-plugin	-	-		no NVD product
+xfce4-screensaver	-	-		no NVD product
+xfce4-screenshooter	-	-		no NVD product
+xfce4-session	-	-		no NVD product
+xfce4-settings	xfce	xfce4-settings
+xfce4-systemload-plugin	-	-		no NVD product
+xfce4-taskmanager	-	-		no NVD product
+xfce4-terminal	-	-		no NVD product
+xfce4-weather-plugin	-	-		no NVD product
+xfce4-whiskermenu-plugin	-	-		no NVD product
+xfce4-xkb-plugin	-	-		no NVD product
+xfconf	-	-		no NVD product
+xfdesktop	-	-		no NVD product
+xfwm4	-	-		no NVD product
+accountsservice	accountsservice_project	accountsservice
+acme.sh	acme.sh_project	acme.sh
+ada	-	-		Ada URL parser; no NVD product
+android-tools	-	-		no NVD product
+audacious	-	-		no NVD product
+audacious-plugins	-	-		no NVD product
+audacity	audacityteam	audacity
+btop	-	-		no NVD product
+cava	-	-		no NVD product
+chromium	google	chrome
+consul	hashicorp	consul
+cpufrequtils	-	-		no NVD product
+crosstool-ng	-	-		no NVD product
+deadbeef	-	-		no NVD product
+dhcp	isc	dhcp	p-suffix-to-update
+directx-shader-compiler	-	-		no NVD product
+elogind	-	-		no NVD product
+etcd	etcd	etcd
+firefox	mozilla	firefox
+freerdp	freerdp	freerdp
+gcc-fortran	gnu	gcc		built from the gcc source tarball
+geany	-	-		no NVD product
+geany-plugins	-	-		no NVD product
+glmark2	-	-		no NVD product
+gn	-	-		no NVD product
+go	golang	go
+gspell	-	-		no NVD product
+gtest	-	-		no NVD product
+gtk-engine-murrine	-	-		no NVD product
+gtksourceview4	-	-		no NVD product
+gtkspell3	-	-		no NVD product
+gvfs	gnome	gvfs
+haproxy	haproxy	haproxy
+hostapd	w1.fi	hostapd
+iozone	-	-		no NVD product
+iperf3	iperf3_project	iperf3
+iptraf-ng	iptraf-ng	iptraf-ng
+jemalloc	-	-		no NVD product
+keepalived	keepalived	keepalived
+libabw	-	-		no NVD product
+libatasmart	-	-		no NVD product
+libcanberra	-	-		no NVD product
+libcddb	-	-		no NVD product
+libcue	lipnitsk	libcue
+libdispatch	-	-		no NVD product
+libepubgen	-	-		no NVD product
+libfreehand	-	-		no NVD product
+libglade	-	-		no NVD product
+libglade-compat	-	-		no NVD product
+libgphoto2	-	-		no NVD product
+libimobiledevice	libimobiledevice	libimobiledevice
+libimobiledevice-glue	-	-		no NVD product
+libmali-bifrost-g31-x11-gbm	-	-		ARM Mali userspace blob
+libmali-bifrost-g52-x11-gbm	-	-		ARM Mali userspace blob
+libmali-midgard-t86x-x11-gbm	-	-		ARM Mali userspace blob
+libmali-utgard-450-x11-gbm	-	-		ARM Mali userspace blob
+libmali-valhall-g610-x11-gbm	-	-		ARM Mali userspace blob
+libmspub	-	-		no NVD product
+libmtp	libmtp_project	libmtp
+libmwaw	libmwaw_project	libmwaw
+libodfgen	-	-		no NVD product
+libpagemaker	-	-		no NVD product
+libplist	libimobiledevice	libplist
+libptytty	-	-		no NVD product
+libreoffice	libreoffice	libreoffice
+librewolf	-	-		independent Firefox fork with custom versioning
+librga	-	-		no NVD product
+libsbsms	-	-		no NVD product
+libstaroffice	libstaroffice_project	libstaroffice
+libusbmuxd	-	-		no NVD product
+libutempter	-	-		no NVD product
+libvisio	-	-		no NVD product
+libwpd	libwpd_project	libwpd
+libzmf	-	-		no NVD product
+logrotate	logrotate_project	logrotate
+lrzsz	lrzsz_project	lrzsz
+mac	-	-		no NVD product
+mkdocs	mkdocs	mkdocs
+mkdocs-material	-	-		no NVD product
+mkinitramfs	-	-		Irradium initramfs generator
+mpp	-	-		no NVD product
+mpv	mpv	mpv
+mtd-utils	-	-		no NVD product
+net-snmp	net-snmp	net-snmp
+nmon	-	-		no NVD product
+nss-pam-ldapd	arthurdejong	nss-pam-ldapd
+openipmi	-	-		no NVD product
+openjdk21-jdk	oracle	openjdk
+openvpn	openvpn	openvpn
+p7zip	7-zip	p7zip
+patroni	-	-		no NVD product
+php-bcmath	php	php		built from the php source tarball
+php-pgsql	php	php		built from the php source tarball
+pkcs11-helper	-	-		no NVD product
+pkgtools	-	-		Slackware/Irradium pkgtools scripts
+portmidi	-	-		no NVD product
+portsmf	-	-		no NVD product
+postgresql	postgresql	postgresql
+python3-backrefs	-	-		no NVD product
+python3-etcd	-	-		no NVD product
+python3-hatch-nodejs-version	-	-		no NVD product
+python3-kazoo	-	-		no NVD product
+python3-mdx-truly-sane-lists	-	-		no NVD product
+python3-mergedeep	-	-		no NVD product
+python3-prettytable	-	-		no NVD product
+python3-py-consul	-	-		no NVD product
+python3-pymdown-extensions	facelessuser	pymdown_extensions
+python3-pysyncobj	-	-		no NVD product
+python3-pyyaml-env-tag	-	-		no NVD product
+python3-ydiff	-	-		no NVD product
+qrencode	-	-		no NVD product
+qt5-webkit	qt	qtwebkit
+quiterss	-	-		no NVD product
+range-v3	-	-		no NVD product
+rasqal	-	-		no NVD product
+rbdoom-3-bfg	-	-		no NVD product
+redland	-	-		no NVD product
+rkdeveloptool	-	-		no NVD product
+rnnoise	-	-		no NVD product
+rp-pppoe	-	-		no NVD product
+rssguard	-	-		no NVD product
+rxvt-unicode	rxvt-unicode_project	rxvt-unicode
+shntool	-	-		no NVD product
+slang	-	-		no NVD product
+sshpass	-	-		no NVD product
+telegram-desktop	telegram	telegram_desktop
+tg_owt	-	-		no NVD product
+timescaledb	timescale	timescaledb
+timescaledb-tune	-	-		no NVD product
+tinc	tinc-vpn	tinc
+tlottie	-	-		no NVD product
+ungoogled-chromium	google	chrome		ungoogled build of Chromium
+unixodbc	unixodbc	unixodbc
+urxvt-perls	-	-		no NVD product
+viewnior	-	-		no NVD product
+vlc	videolan	vlc_media_player
+vte3	gnome	vte
+wallet-engine	-	-		no NVD product
+xcursor-justblue	-	-		Cursor theme; no NVD product
+xmlsec	xmlsec_project	xmlsec
+yt-dlp	yt-dlp_project	yt-dlp
+zabbix-agent2	zabbix	zabbix		built from the zabbix source tarball
+zabbix-agentd	zabbix	zabbix		built from the zabbix source tarball
+zabbix-frontend	zabbix	zabbix		built from the zabbix source tarball
+zabbix-proxy	zabbix	zabbix		built from the zabbix source tarball
+zabbix-server	zabbix	zabbix		built from the zabbix source tarball
+zabbix-utils	zabbix	zabbix		built from the zabbix source tarball
+zabbix-web-service	zabbix	zabbix		built from the zabbix source tarball
+libb2	-	-		no NVD product
+lua	lua	lua
+libpcap	tcpdump	libpcap
+nmap	nmap	nmap
+notqmail	-	-		custom port; no NVD product
+libuv	libuv_project	libuv
+openssl	openssl	openssl
+zlib	zlib	zlib
+ncurses	gnu	ncurses
+readline	gnu	readline
+flex	westes	flex
+bzip2	bzip	bzip2
+xz	tukaani	xz
+elfutils	elfutils_project	elfutils
+jansson	jansson_project	jansson
+libedit	-	-		no NVD product
+libmnl	-	-		no NVD product
+libnftnl	-	-		no NVD product
+expat	libexpat_project	libexpat
+libffi	libffi_project	libffi
+libnsl	-	-		no NVD product
+libtirpc	libtirpc_project	libtirpc
+libxcrypt	-	-		no NVD product
+mpdecimal	-	-		no NVD product
+sqlite3	sqlite	sqlite
+python3	python	python
+nftables	-	-		no NVD product
+iptables	-	-		no NVD product
+linux-pam	linux-pam	linux-pam
+libcap	libcap_project	libcap
+libnghttp2	-	-		no NVD product
+zstd	facebook	zstandard
+curl	haxx	curl
+jsoncpp	-	-		no NVD product
+attr	-	-		no NVD product
+acl	-	-		no NVD product
+lzo	-	-		no NVD product
+libarchive	libarchive	libarchive
+lzlib	-	-		no NVD product
+rhash	-	-		no NVD product
+kmod	-	-		no NVD product
+libmd	-	-		no NVD product
+libmpfr	-	-		no NVD product
+libmpc	-	-		no NVD product
+libxml2	xmlsoft	libxml2
+ninja	-	-		no NVD product
+python3-setuptools	python	setuptools
+clang	llvm	clang
+popt	-	-		no NVD product
+libpcre2	pcre	pcre2
+meson	-	-		no NVD product
+python3-flit-core	-	-		no NVD product
+python3-installer	-	-		no NVD product
+python3-pyproject-hooks	-	-		no NVD product
+python3-packaging	-	-		no NVD product
+file	file_project	file
+libcap-ng	-	-		no NVD product
+util-linux	kernel	util-linux
+glib	gnome	glib
+desktop-file-utils	-	-		no NVD product
+itstool	-	-		no NVD product
+shared-mime-info	-	-		no NVD product
+libdevmapper	-	-		no NVD product
+libpng	libpng	libpng
+freetype	freetype	freetype
+json-c	json-c	json-c
+libnvme	-	-		no NVD product
+keyutils	-	-		no NVD product
+glib-introspection	-	-		no NVD product
+nasm	-	-		no NVD product
+perl	perl	perl
+p5-file-sharedir-install	-	-		no NVD product
+p5-class-inspector	-	-		no NVD product
+p5-file-sharedir	-	-		no NVD product
+p5-xml-parser	-	-		no NVD product
+intltool	-	-		no NVD product
+xorg-xorgproto	-	-		no NVD product
+xorg-libxau	-	-		no NVD product
+xorg-libxdmcp	x.org	libxdmcp
+xorg-xcb-proto	-	-		no NVD product
+xorg-libxcb	-	-		no NVD product
+xorg-util-macros	-	-		no NVD product
+xorg-xtrans	-	-		no NVD product
+xorg-libx11	x.org	libx11
+xorg-libxext	-	-		no NVD product
+xorg-libxfixes	x.org	libxfixes
+xorg-libxi	x.org	libxi
+xorg-libxtst	x.org	libxtst
+at-spi2-core	-	-		no NVD product
+bubblewrap	bubblewrap_project	bubblewrap
+fontconfig	fontconfig_project	fontconfig
+libtiff	libtiff	libtiff
+lcms2	-	-		no NVD product
+libseccomp	libseccomp_project	libseccomp
+lld	-	-		no NVD product
+glycin	-	-		no NVD product
+gdk-pixbuf	gnome	gdk-pixbuf
+xorg-libpciaccess	-	-		no NVD product
+libdrm	-	-		no NVD product
+libglvnd	-	-		no NVD product
+python3-markupsafe	-	-		no NVD product
+python3-build	-	-		no NVD product
+python3-wheel	wheel_project	wheel
+python3-mako	-	-		no NVD product
+libyaml	pyyaml	libyaml
+python3-cython	-	-		no NVD product
+python3-pyyaml	pyyaml	pyyaml
+xorg-libxdamage	-	-		no NVD product
+xorg-libxrender	x.org	libxrender
+xorg-libxrandr	x.org	libxrandr
+xorg-libxshmfence	-	-		no NVD product
+xorg-libxv	x.org	libxv
+xorg-libxvmc	x.org	libxvmc
+xorg-libxxf86vm	-	-		no NVD product
+libepoxy	-	-		no NVD product
+xorg-libpixman	-	-		no NVD product
+xorg-xcb-util	-	-		no NVD product
+cairo	cairographics	cairo
+fribidi	-	-		no NVD product
+xorg-libice	freedesktop	libice
+xorg-libsm	-	-		no NVD product
+xorg-libxft	-	-		no NVD product
+pango	gnome	pango
+gtk3	gnome	gtk
+alsa-lib	alsa-project	alsa
+glu	-	-		no NVD product
+iso-codes	-	-		no NVD product
+libgpg-error	-	-		no NVD product
+libgcrypt	gnupg	libgcrypt
+python3-pytz	-	-		no NVD product
+python3-babel	babel	babel
+python3-jinja2	-	-		no NVD product
+vala	gnome	vala
+xorg-libxt	-	-		no NVD product
+dbus-glib	freedesktop	dbus-glib
+p5-uri	-	-		no NVD product
+http-parser	-	-		no NVD product
+libgit2	libgit2	libgit2
+cargo-c	-	-		no NVD product
+toml2json	-	-		no NVD product
+librsvg	gnome	librsvg
+libsass	libsass	libsass
+sassc	sass-lang	sassc
+oniguruma	oniguruma_project	oniguruma
+jq	jq_project	jq
+libzip	libzip	libzip
+gl-headers	-	-		no NVD product
+graphene	-	-		no NVD product
+gstreamer	gstreamer_project	gstreamer
+libgudev	-	-		no NVD product
+libogg	xiph	libogg
+libvorbis	xiph	libvorbis
+libtheora	-	-		no NVD product
+libvisual	-	-		no NVD product
+libvisual-plugins	-	-		no NVD product
+opus	opus-codec	opus
+orc	gstreamer	orc
+gst-plugins-base	gstreamer_project	gst-plugins-base
+giflib	giflib_project	giflib
+libwebp	webmproject	libwebp
+libxkbcommon	xkbcommon	libxkbcommon
+xorg-libxcomposite	-	-		no NVD product
+xorg-libxcursor	-	-		no NVD product
+xorg-libxinerama	-	-		no NVD product
+xorg-xcb-util-image	-	-		no NVD product
+xorg-xcb-util-keysyms	-	-		no NVD product
+xorg-xcb-util-renderutil	-	-		no NVD product
+xorg-xcb-util-wm	-	-		no NVD product
+xorg-xcb-util-cursor	-	-		no NVD product
+nettle	gnu	nettle
+xorg-bdftopcf	-	-		no NVD product
+xorg-font-util	-	-		no NVD product
+xorg-libxmu	-	-		no NVD product
+xorg-libxpm	x.org	libxpm
+xorg-libxaw	-	-		no NVD product
+xorg-libxcvt	-	-		no NVD product
+xorg-libfontenc	-	-		no NVD product
+xorg-libxfont2	-	-		no NVD product
+xorg-libxres	-	-		no NVD product
+xorg-mkfontscale	-	-		no NVD product
+xorg-libxkbfile	-	-		no NVD product
+xorg-xkbcomp	-	-		no NVD product
+xorg-server	x.org	x_server
+xorg-xauth	-	-		no NVD product
+libnl	-	-		no NVD product
+optipng	optipng_project	optipng
+libwnck-gtk3	-	-		no NVD product
+wayland	wayland	wayland
+hwdata	-	-		no NVD product
+libdisplay-info	-	-		no NVD product
+enchant	-	-		no NVD product
+glade	gnome	glade
+libexif	libexif_project	libexif
+p5-xml-simple	-	-		no NVD product
+icon-naming-utils	-	-		no NVD product
+gnome-icon-theme	-	-		no NVD product
+libnotify	gnome	libnotify
+poppler	freedesktop	poppler
+dialog	-	-		no NVD product
+alsa-utils	-	-		no NVD product
+hicolor-icon-theme	-	-		no NVD product
+wayland-protocols	-	-		no NVD product
+gtk-layer-shell	-	-		no NVD product
+python3-cairo	-	-		no NVD product
+python3-gobject	-	-		no NVD product
+python3-vcs-versioning	-	-		no NVD product
+python3-setuptools-scm	-	-		no NVD product
+python3-psutil	psutil_project	psutil
+libusb	libusb	libusb
+upower	upower_project	upower
+flac	flac_project	flac
+libsndfile	libsndfile_project	libsndfile
+speexdsp	-	-		no NVD product
+pulseaudio	pulseaudio	pulseaudio
+xorg-libxscrnsaver	-	-		no NVD product
+libunistring	-	-		no NVD product
+libtasn1	gnu	libtasn1
+make-ca	-	-		no NVD product
+p11-kit	p11-kit_project	p11-kit
+gnutls	gnu	gnutls
+gsettings-desktop-schemas	-	-		no NVD product
+glib-networking	gnome	glib-networking
+libidn2	gnu	libidn2
+publicsuffix-list	-	-		no NVD product
+libpsl	-	-		no NVD product
+libsoup3	-	-		no NVD product
+consolekit	consolekit_project	consolekit
+duktape	duktape_project	duktape
+polkit	polkit_project	polkit
+xorg-iceauth	-	-		no NVD product
+xorg-xinit	x.org	xinit
+xorg-xrdb	-	-		no NVD product
+mtdev	-	-		no NVD product
+xorg-libevdev	-	-		no NVD product
+libinput	freedesktop	libinput
+lz4	lz4_project	lz4
+fast_float	-	-		no NVD product
+libsoup	gnome	libsoup
+xorg-xrandr	-	-		no NVD product
+xorg-libxpresent	-	-		no NVD product
+openal	-	-		no NVD product
+pipewire	-	-		no NVD product
+libva	-	-		no NVD product
+socat	socat	socat
+abseil-cpp	-	-		no NVD product
+protobuf	google	protobuf
+brotli	google	brotli
+autoconf	-	-		no NVD product
+gawk	gnu	gawk
+automake	gnu	automake
+lame	lame_project	lame
+libcdio	-	-		no NVD product
+libcdio-paranoia	-	-		no NVD product
+bison	gnu	bison
+libsamplerate	libsamplerate_project	libsamplerate
+mpg123	mpg123	mpg123
+neon	neon	neon
+wavpack	wavpack	wavpack
+opusfile	-	-		no NVD product
+wxgtk3	-	-		no NVD product
+libsoxr	-	-		no NVD product
+rapidjson	tencent	rapidjson
+portaudio	portaudio_project	portaudio	underscore-to-dot
+libmad	-	-		no NVD product
+libid3tag	libid3tag_project	libid3tag
+soundtouch	-	-		no NVD product
+libtool	gnu	libtool
+hwloc	open-mpi	hwloc
+libevent	libevent_project	libevent
+openpmix	openpmix	openpmix
+prrte	-	-		no NVD product
+openmpi	-	-		no NVD product
+fftw	-	-		no NVD product
+libsdl2	-	-		no NVD product
+nspr	mozilla	nspr
+nss	mozilla	network_security_services
+lynx	lynx_project	lynx
+libxslt	xmlsoft	libxslt
+unzip	unzip_project	unzip
+docbook-xml	-	-		no NVD product
+docbook-xsl	-	-		no NVD product
+xmlto	-	-		no NVD product
+xdg-utils	freedesktop	xdg-utils
+cups	apple	cups
+pciutils	-	-		no NVD product
+e2fsprogs	e2fsprogs_project	e2fsprogs
+krb5	mit	krb5
+gperf	-	-		no NVD product
+rust-bindgen	-	-		no NVD product
+npm	-	-		no NVD product
+typescript	-	-		no NVD product
+sysfsutils	-	-		no NVD product
+patch	gnu	patch
+make	gnu	make
+sed	gnu	sed
+wget	gnu	wget
+texinfo	gnu	texinfo
+libbsd	freedesktop	libbsd
+openldap	openldap	openldap
+coreutils	gnu	coreutils
+aom	-	-		no NVD product
+autoconf-2.13	-	-		no NVD product
+cbindgen	-	-		no NVD product
+vulkan-headers	-	-		no NVD product
+vulkan-loader	-	-		no NVD product
+dav1d	videolan	dav1d
+graphite2	sil	graphite2
+libvpx	webmproject	libvpx
+libksba	gnupg	libksba
+libassuan	-	-		no NVD product
+pinentry	-	-		no NVD product
+npth	-	-		no NVD product
+gnupg	gnupg	gnupg
+swig	swig_project	swig
+gpgme	gpgme_project	gpgme
+autoconf-archive	-	-		no NVD product
+gtk	gnome	gtk
+adwaita-icon-theme	-	-		no NVD product
+gtk4	gnome	gtk
+libsecret	-	-		no NVD product
+gcr	-	-		no NVD product
+json-glib	-	-		no NVD product
+libbytesize	-	-		no NVD product
+iniparser	ndevilla	iniparser
+libtraceevent	-	-		no NVD product
+libtracefs	-	-		no NVD product
+ndctl	-	-		no NVD product
+cryptsetup	cryptsetup_project	cryptsetup
+volume_key	-	-		no NVD product
+libblockdev	-	-		no NVD product
+udisks2	uchicago	udisks
+openssh	openbsd	openssh	p-suffix-to-update
+fuse3	-	-		no NVD product
+lua53	-	-		no NVD product
+boost	boost	boost
+cppunit	-	-		no NVD product
+librevenge	-	-		no NVD product
+icu	-	-		no NVD product
+argon2	-	-		no NVD product
+glfw	-	-		no NVD product
+box2d	-	-		no NVD product
+clucene	-	-		no NVD product
+dragonbox	-	-		no NVD product
+fakeroot	-	-		no NVD product
+libsigc++2	-	-		no NVD product
+glibmm-gtk3	-	-		no NVD product
+atkmm	-	-		no NVD product
+libsigc++	-	-		no NVD product
+cairomm	-	-		no NVD product
+cairomm-1.0	-	-		no NVD product
+pangomm-gtk3	-	-		no NVD product
+gtkmm3	-	-		no NVD product
+libspiro	libspiro_project	libspiro
+libuninameslist	-	-		no NVD product
+potrace	potrace_project	potrace
+woff2	-	-		no NVD product
+fontforge	fontforge	fontforge
+frozen	-	-		no NVD product
+libcdr	-	-		no NVD product
+libcmis	-	-		no NVD product
+libcuckoo	-	-		no NVD product
+liblangtag	-	-		no NVD product
+libe-book	-	-		no NVD product
+glm	-	-		no NVD product
+mdds	-	-		no NVD product
+libetonyek	-	-		no NVD product
+libexttextcat	-	-		no NVD product
+libfixmath	-	-		no NVD product
+hunspell	hunspell_project	hunspell
+libmythes	-	-		no NVD product
+libnumbertext	-	-		no NVD product
+fmt	fmt	fmt
+spdlog	gabime	spdlog
+libixion	-	-		no NVD product
+liborcus	-	-		no NVD product
+libqrcodegen	-	-		no NVD product
+libqxp	-	-		no NVD product
+libtommath	libtom	libtommath
+libwpg	-	-		no NVD product
+libwps	-	-		no NVD product
+md4c	md4c_project	md4c
+openjpeg2	uclouvain	openjpeg
+paper	-	-		no NVD product
+raptor	librdf	raptor
+zxcvbn-c	-	-		no NVD product
+python3-editables	-	-		no NVD product
+python3-pathspec	-	-		no NVD product
+python3-zipp	-	-		no NVD product
+python3-importlib_metadata	-	-		no NVD product
+python3-pluggy	-	-		no NVD product
+python3-poetry-core	-	-		no NVD product
+python3-tomlkit	-	-		no NVD product
+python3-calver	-	-		no NVD product
+python3-trove-classifiers	-	-		no NVD product
+python3-hatchling	-	-		no NVD product
+python3-click	palletsprojects	click
+python3-hatch-requirements-txt	-	-		no NVD product
+cpio	gnu	cpio
+findutils	gnu	findutils
+libass	libass_project	libass
+glad	-	-		no NVD product
+spirv-headers	-	-		no NVD product
+spirv-tools	-	-		no NVD product
+glslang	-	-		no NVD product
+shaderc	-	-		no NVD product
+libplacebo	-	-		no NVD product
+python3-docutils	-	-		no NVD product
+python3-charset-normalizer	-	-		no NVD product
+python3-idna	-	-		no NVD product
+python3-hatch-vcs	-	-		no NVD product
+python3-ply	-	-		no NVD product
+python3-pycparser	-	-		no NVD product
+python3-cffi	-	-		no NVD product
+python3-semantic-version	-	-		no NVD product
+python3-toml	-	-		no NVD product
+python3-setuptools-rust	-	-		no NVD product
+python3-maturin	-	-		no NVD product
+python3-cryptography	cryptography_project	cryptography
+python3-typing_extensions	-	-		no NVD product
+python3-pyopenssl	pyopenssl_project	pyopenssl
+python3-urllib3	-	-		no NVD product
+python3-certifi	certifi	certifi
+python3-requests	-	-		no NVD product
+python3-six	-	-		no NVD product
+python3-hatch-fancy-pypi-readme	-	-		no NVD product
+python3-tzdata	-	-		no NVD product
+python3-dateutil	-	-		no NVD product
+python3-wcwidth	-	-		no NVD product
+python3-psycopg2	-	-		no NVD product
+python3-uv-build	-	-		no NVD product
+python3-dnspython	dnspython	dnspython
+python3-markdown	-	-		no NVD product
+python3-pygments	pygments	pygments
+ruby	ruby-lang	ruby
+ppp	samba	ppp
+freeglut	-	-		no NVD product
+jasper	jasper_project	jasper
+qt6-imageformats	qt	qt		Qt 6 module
+qt6-shadertools	qt	qt		Qt 6 module
+qt6-svg	qt	qt		Qt 6 module
+qt6-declarative	qt	qt		Qt 6 module
+qt6-tools	qt	qt		Qt 6 module
+gst-libav	gstreamer_project	gst-libav
+qt6-quick3d	qt	qt		Qt 6 module
+qt6-multimedia	qt	qt		Qt 6 module
+minizip	zlib	minizip
+openh264	-	-		no NVD product
+qt6-wayland	qt	qt		Qt 6 module
+qt6-5compat	qt	qt		Qt 6 module
+graphviz	graphviz	graphviz
+mm-common	-	-		no NVD product
+inih	-	-		no NVD product
+exiv2	exiv2	exiv2
+gnome-common	-	-		no NVD product
+lua52	lua	lua
+xorg-xf86-input-libinput	-	-		no NVD product
+xorg-xf86-video-vesa	-	-		no NVD product
+xorg-rgb	-	-		no NVD product
+xkeyboard-config	-	-		no NVD product
+xorg	-	-		no NVD product
+apr	apache	portable_runtime
+apr-util	apache	portable_runtime_utility
+apache	apache	http_server
+php	php	php
+php-fpm	php	php		built from the php source tarball
+libgd	libgd	libgd
+php-gd	php	php		built from the php source tarball
+cyrus-sasl	cyrus	sasl
+php-ldap	php	php		built from the php source tarball
+php-mbstring	php	php		built from the php source tarball
+php-gettext	php	php		built from the php source tarball
+php-sockets	php	php		built from the php source tarball

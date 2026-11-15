@@ -1,0 +1,131 @@
+name: Vulnerability Scan & Clearinghouse
+
+on:
+  push:
+    branches:
+      - "[0-9]*.[0-9]*"
+    paths:
+      - "packages/**"
+      - "ports/**"
+      - "builder/**"
+      - ".github/workflows/vuln-scan.yml"
+  pull_request:
+    branches:
+      - "[0-9]*.[0-9]*"
+    paths:
+      - "packages/**"
+      - "ports/**"
+      - "builder/**"
+      - ".github/workflows/vuln-scan.yml"
+  workflow_run:
+    workflows: ["Sync Upstream Port Submodules"]
+    types: [completed]
+  schedule:
+    # Run daily at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      open_issues:
+        description: "Open deduplicated GitHub issues for actionable findings and override drift/retire PRs"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  scan:
+    name: Vulnerability Scan & Override Status
+    runs-on: ubuntu-latest
+    env:
+      DISTR_VERSION: ${{ github.ref_name }}
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Lint CPE map and coverage (offline)
+        run: |
+          PYTHONPATH=./builder python3 -m vulntool cpe lint --all
+          PYTHONPATH=./builder python3 -m vulntool cpe coverage --all
+
+      - name: Lint OpenVEX statements
+        run: |
+          PYTHONPATH=./builder python3 -m vulntool vex lint
+
+      - name: Verify changed CPE map rows against NVD dictionary
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+          else
+            BASE_REF="${{ github.event.before }}"
+          fi
+          if [[ -n "$BASE_REF" && "$BASE_REF" != "0000000000000000000000000000000000000000" ]]; then
+            if git diff --name-only "$BASE_REF"..HEAD -- builder/cpe-map.tsv | grep -q "cpe-map.tsv"; then
+              PYTHONPATH=./builder python3 -m vulntool cpe verify --diff "$BASE_REF"
+            else
+              echo "builder/cpe-map.tsv unchanged; skipping live NVD API verification."
+            fi
+          fi
+
+      - name: Install Grype
+        run: |
+          if ! command -v grype >/dev/null 2>&1; then
+            curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sudo sh -s -- -b /usr/local/bin
+          fi
+          grype version
+
+      - name: Run full vulnerability scan (--all --fail-on high)
+        id: vuln_scan
+        env:
+          OPEN_ISSUES: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_run' || inputs.open_issues == true }}
+        run: |
+          SCAN_ARGS=(
+            --all
+            --fail-on high
+            --report-json /tmp/vuln-report.json
+            --sbom-out /tmp/irradium-sbom.cdx.json
+            --vex-out /tmp/irradium-openvex.json
+            --summary-markdown "$GITHUB_STEP_SUMMARY"
+          )
+          if [[ "$OPEN_ISSUES" == "true" ]]; then
+            SCAN_ARGS+=(--open-issues)
+          fi
+          PYTHONPATH=./builder python3 -m vulntool scan "${SCAN_ARGS[@]}"
+
+      - name: Upload vulnerability scan report & SBOM/OpenVEX artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vuln-scan-report
+          path: |
+            /tmp/vuln-report.json
+            /tmp/irradium-sbom.cdx.json
+            /tmp/irradium-openvex.json
+          if-no-files-found: ignore
+
+      - name: Check custom port override status (retire / drift / stale)
+        if: always()
+        env:
+          APPLY_GITHUB: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_run' || inputs.open_issues == true }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          STATUS_ARGS=()
+          if [[ "$APPLY_GITHUB" == "true" ]]; then
+            STATUS_ARGS+=(--apply-github)
+          fi
+          PYTHONPATH=./builder python3 -m vulntool override status "${STATUS_ARGS[@]}"
