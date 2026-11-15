@@ -1,0 +1,16 @@
+.github/workflows/vuln-scan.yml
+  h_c872c6f1ba48bc 125,128-140,147,160-162,164
+README.md
+  h_c872c6f1ba48bc 6-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "18e4e920987d9131108be829ce73134ee83f0f7a",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
