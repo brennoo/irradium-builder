@@ -1,0 +1,33 @@
+# Description: Modern community-driven fork of the qmail MTA
+# URL: https://notqmail.org/
+# Maintainer: custom
+
+name=notqmail
+version=1.09
+release=1
+source=(https://github.com/notqmail/$name/releases/download/$name-$version/$name-$version.tar.xz
+    qmail.rc
+    pre-install
+    post-install)
+
+build() {
+    cd $name-$version
+
+    echo "${CC:-cc} ${CFLAGS}" > conf-cc
+    echo "${CC:-cc} ${LDFLAGS}" > conf-ld
+
+    make NROFF=true it man instpackage instchown
+
+    DESTDIR=$PKG ./instpackage
+    DESTDIR=$PKG ./instchown
+
+    rm -rf $PKG/var/qmail/doc $PKG/var/qmail/man/cat*
+
+    install -m 0755 instchown $PKG/var/qmail/bin/instchown
+    install -m 0755 $SRC/pre-install $PKG/var/qmail/bin/qmail-setup-ids
+    install -D -m 0755 $SRC/qmail.rc $PKG/etc/rc.d/qmail
+
+    install -d $PKG/usr/sbin $PKG/usr/lib
+    ln -sf ../../var/qmail/bin/sendmail $PKG/usr/sbin/sendmail
+    ln -sf ../var/qmail/bin/sendmail $PKG/usr/lib/sendmail
+}

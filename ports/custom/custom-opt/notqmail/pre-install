@@ -1,0 +1,23 @@
+#!/bin/sh
+
+getent group nofiles >/dev/null || /usr/sbin/groupadd -r nofiles
+getent group qmail   >/dev/null || /usr/sbin/groupadd -r qmail
+
+getent passwd alias  >/dev/null || /usr/sbin/useradd -r -g nofiles -d /var/qmail/alias -s /sbin/nologin alias
+getent passwd qmaild >/dev/null || /usr/sbin/useradd -r -g nofiles -d /var/qmail -s /sbin/nologin qmaild
+getent passwd qmaill >/dev/null || /usr/sbin/useradd -r -g nofiles -d /var/qmail -s /sbin/nologin qmaill
+getent passwd qmailp >/dev/null || /usr/sbin/useradd -r -g nofiles -d /var/qmail -s /sbin/nologin qmailp
+getent passwd qmailq >/dev/null || /usr/sbin/useradd -r -g qmail   -d /var/qmail -s /sbin/nologin qmailq
+getent passwd qmailr >/dev/null || /usr/sbin/useradd -r -g qmail   -d /var/qmail -s /sbin/nologin qmailr
+getent passwd qmails >/dev/null || /usr/sbin/useradd -r -g qmail   -d /var/qmail -s /sbin/nologin qmails
+
+if [ -d /var/qmail ]; then
+    chown -R root:qmail /var/qmail/bin /var/qmail/boot /var/qmail/control /var/qmail/users /var/qmail/man 2>/dev/null || true
+    chown alias:qmail /var/qmail/alias
+    chmod 2755 /var/qmail/alias
+    if [ -x /var/qmail/bin/instchown ]; then
+        /var/qmail/bin/instchown queue-only
+    fi
+    chown qmailq:qmail /var/qmail/bin/qmail-queue
+    chmod 4711 /var/qmail/bin/qmail-queue
+fi

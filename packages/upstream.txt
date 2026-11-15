@@ -1,0 +1,11 @@
+# Packages pre-built by official dl.irradium.org.
+# These (and their uninstalled dependencies) are downloaded from dl.irradium.org,
+# verified against the official Irradium signify key, and re-signed for this mirror.
+bindutils
+bind
+go
+ntp
+wpa_supplicant
+acme.sh
+libpcap
+libssh2

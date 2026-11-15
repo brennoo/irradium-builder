@@ -1,0 +1,20 @@
+[submodule "ports/irradium"]
+	path = ports/irradium
+	url = https://gitlab.com/sndwvs/irradium.git
+	branch = 3.8
+[submodule "ports/crux-core"]
+	path = ports/crux-core
+	url = https://git.crux.nu/ports/core.git
+	branch = 3.8
+[submodule "ports/crux-opt"]
+	path = ports/crux-opt
+	url = https://git.crux.nu/ports/opt.git
+	branch = 3.8
+[submodule "ports/crux-xorg"]
+	path = ports/crux-xorg
+	url = https://git.crux.nu/ports/xorg.git
+	branch = 3.8
+[submodule "ports/crux-contrib"]
+	path = ports/crux-contrib
+	url = https://git.crux.nu/ports/contrib.git
+	branch = 3.8

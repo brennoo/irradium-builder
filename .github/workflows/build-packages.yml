@@ -1,0 +1,82 @@
+name: Build & Publish Irradium Packages
+
+on:
+  push:
+    branches:
+      - "[0-9]*.[0-9]*"
+    paths:
+      - "packages/**"
+      - "ports/**"
+      - "builder/**"
+      - ".github/workflows/build-packages.yml"
+  workflow_run:
+    workflows: ["Sync Upstream Port Submodules"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Space-separated packages to build (leave empty to process packages/upstream.txt and packages/build.txt)"
+        required: false
+        default: ""
+      arch:
+        description: "Target architecture"
+        required: true
+        type: choice
+        options:
+          - riscv64
+          - aarch64
+        default: riscv64
+      force_rebuild:
+        description: "Rebuild even if package version already exists on mirror"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: Build (${{ inputs.arch || 'riscv64' }})
+    # Works on ubuntu-24.04-arm (16GB RAM, free on public repos) or native riscv64 runners
+    runs-on: ubuntu-24.04-arm
+    env:
+      ARCH: ${{ inputs.arch || 'riscv64' }}
+      DISTR_VERSION: ${{ github.ref_name }}
+      R2_BUCKET: ${{ vars.R2_BUCKET || 'irradium' }}
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      SIGNIFY_SECRET_KEY: ${{ secrets.SIGNIFY_SECRET_KEY }}
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up QEMU binfmt_misc for cross-arch execution
+        if: runner.arch != 'RISCV64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - name: Build & publish packages
+        env:
+          INPUT_PACKAGES: ${{ inputs.packages }}
+          FORCE_REBUILD: ${{ inputs.force_rebuild }}
+        run: |
+          chmod +x ./builder/build-pkg.sh
+          EXTRA_ARGS=(--arch "$ARCH" --publish)
+          if [[ "$FORCE_REBUILD" != "true" ]]; then
+            EXTRA_ARGS+=(--skip-existing)
+          fi
+          if [[ -n "$INPUT_PACKAGES" ]]; then
+            read -r -a PKG_ARGS <<< "$INPUT_PACKAGES"
+            for pkg in "${PKG_ARGS[@]}"; do
+              if [[ ! "$pkg" =~ ^[a-zA-Z0-9._+-]+(/[a-zA-Z0-9._+-]+)?$ ]]; then
+                echo "ERROR: Invalid package specifier: '$pkg'" >&2
+                exit 1
+              fi
+            done
+            ./builder/build-pkg.sh "${EXTRA_ARGS[@]}" "${PKG_ARGS[@]}"
+          else
+            ./builder/build-pkg.sh "${EXTRA_ARGS[@]}" --all
+          fi

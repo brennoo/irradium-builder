@@ -1,0 +1,7 @@
+# Packages compiled from source by irradium-builder.
+libb2
+git
+unbound
+lua
+nmap
+notqmail

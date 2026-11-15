@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# /etc/rc.d/qmail: start/stop notqmail daemon
+#
+
+case $1 in
+start)
+    /var/qmail/bin/qmail-setup-ids
+    if [ -x /var/qmail/rc ]; then
+        /bin/csh -cf '/var/qmail/rc &'
+    else
+        /var/qmail/boot/home &
+    fi
+    ;;
+stop)
+    killall qmail-send 2>/dev/null
+    ;;
+restart)
+    $0 stop
+    sleep 2
+    $0 start
+    ;;
+status)
+    pidof /var/qmail/bin/qmail-send >/dev/null && echo "qmail-send is running" || echo "qmail-send is stopped"
+    ;;
+*)
+    echo "Usage: $0 [start|stop|restart|status]"
+    ;;
+esac
+
+# End of file

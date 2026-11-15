@@ -1,0 +1,11 @@
+# Build cache & output repositories
+cache/
+repo/
+
+# Private signify keys & local environment (NEVER commit!)
+keys/*.sec
+*.sec
+.env
+
+# OS metadata
+.DS_Store
