@@ -1,4 +1,4 @@
-name: Sync Upstream Port Submodules
+name: Sync Upstream
 
 on:
   schedule:

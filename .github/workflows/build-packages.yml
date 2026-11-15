@@ -1,4 +1,4 @@
-name: Build & Publish Irradium Packages
+name: Build & Publish
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Vulnerability Scan & Clearinghouse
+name: Vulnerability Scan
 
 on:
   push:
@@ -18,7 +18,7 @@ on:
       - "builder/**"
       - ".github/workflows/vuln-scan.yml"
   workflow_run:
-    workflows: ["Sync Upstream Port Submodules"]
+    workflows: ["Sync Upstream"]
     types: [completed]
   schedule:
     # Run daily at 06:00 UTC
@@ -116,6 +116,41 @@ jobs:
             /tmp/irradium-sbom.cdx.json
             /tmp/irradium-openvex.json
           if-no-files-found: ignore
+
+      - name: Build vulnerability badge JSON
+        if: always()
+        run: |
+          if [[ -f /tmp/vuln-report.json ]]; then
+            jq -c '
+              [.actionable[].severity | ascii_downcase] as $s
+              | {
+                  schemaVersion: 1,
+                  label: "vulns",
+                  message: "\($s | map(select(. == "critical")) | length) critical · \($s | map(select(. == "high")) | length) high",
+                  color: (if ($s | index("critical")) then "red"
+                          elif ($s | index("high")) then "orange"
+                          else "green" end)
+                }' /tmp/vuln-report.json > /tmp/vuln-badge.json
+          fi
+
+      - name: Publish badge JSON to badges branch
+        if: always() && github.event_name == 'schedule' && hashFiles('/tmp/vuln-badge.json') != ''
+        run: |
+          set -euo pipefail
+          WORK=$(mktemp -d)
+          cd "$WORK"
+          git init -q
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git fetch -q --depth=1 origin badges 2>/dev/null; then
+            git checkout -q -B badges FETCH_HEAD
+          else
+            git checkout -q --orphan badges
+          fi
+          cp /tmp/vuln-badge.json vuln-scan.json
+          git add vuln-scan.json
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "chore: update vulnerability badge" || { echo "No badge changes."; exit 0; }
+          git push -q origin HEAD:badges
 
       - name: Check custom port override status (retire / drift / stale)
         if: always()

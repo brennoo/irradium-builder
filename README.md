@@ -1,5 +1,10 @@
 # Irradium Binary Packages
 
+[![Build & Publish](https://github.com/brennoo/irradium-builder/actions/workflows/build-packages.yml/badge.svg?branch=3.8)](https://github.com/brennoo/irradium-builder/actions/workflows/build-packages.yml)
+[![Sync Upstream](https://github.com/brennoo/irradium-builder/actions/workflows/sync-submodules.yml/badge.svg?branch=3.8)](https://github.com/brennoo/irradium-builder/actions/workflows/sync-submodules.yml)
+[![Vulnerability Scan](https://github.com/brennoo/irradium-builder/actions/workflows/vuln-scan.yml/badge.svg?branch=3.8)](https://github.com/brennoo/irradium-builder/actions/workflows/vuln-scan.yml)
+[![Vulns](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fbrennoo%2Firradium-builder%2Fbadges%2Fvuln-scan.json)](https://github.com/brennoo/irradium-builder/actions/workflows/vuln-scan.yml)
+
 Pre-built binary packages for **[Irradium](https://irradium.org/) 3.8** - multi-arch but focused on riscv64.
 
 ## Setup on Your Device
