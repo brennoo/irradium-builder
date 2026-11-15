@@ -190,9 +190,15 @@ publish_repo() {
     fi
     mkdir -p "$REPO_ROOT/irradium/packages"
     echo "==> Syncing $REPO_ROOT/irradium/packages/ to s3://$R2_BUCKET/irradium/packages/..."
-    aws s3 sync "$REPO_ROOT/irradium/packages/" "s3://$R2_BUCKET/irradium/packages/" \
+    local sync_status=0
+    if ! aws s3 sync "$REPO_ROOT/irradium/packages/" "s3://$R2_BUCKET/irradium/packages/" \
         --endpoint-url "$R2_ENDPOINT" \
-        --region auto
+        --region auto; then
+        echo "==> Retrying aws s3 sync after transient upload failure..." >&2
+        aws s3 sync "$REPO_ROOT/irradium/packages/" "s3://$R2_BUCKET/irradium/packages/" \
+            --endpoint-url "$R2_ENDPOINT" \
+            --region auto || sync_status=$?
+    fi
 
     echo "==> Generating HTML index listings..."
     local index_tmp
@@ -206,6 +212,9 @@ publish_repo() {
         --content-type "text/html; charset=utf-8" \
         --cache-control "no-cache"
     rm -rf "$index_tmp"
+    if [[ "$sync_status" -ne 0 ]]; then
+        exit "$sync_status"
+    fi
     echo "==> Published packages and index to $MIRROR_DOMAIN/"
 }
 
@@ -487,14 +496,16 @@ if skip_existing:
         for suffix in ("index.html", ""):
             url = f"{mirror_url}/{cat}/{suffix}"
             try:
-                with urllib.request.urlopen(url, timeout=10, context=ssl_ctx) as r:
+                req = urllib.request.Request(url, headers={"User-Agent": "irradium-builder/1.0"})
+                with urllib.request.urlopen(req, timeout=15, context=ssl_ctx) as r:
                     html = r.read().decode("utf-8", errors="replace")
                 items = set()
                 for m in re.finditer(r'href="([^"]+\.pkg\.tar\.gz)"', html):
                     fname = urllib.parse.unquote(m.group(1).split("/")[-1])
                     items.add(f"{cat}/{fname}")
                 return items
-            except Exception:
+            except Exception as exc:
+                print(f"WARN: Failed to query mirror index {url}: {exc}", file=sys.stderr, flush=True)
                 continue
         return set()
 

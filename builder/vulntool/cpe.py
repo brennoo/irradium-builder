@@ -231,11 +231,20 @@ def _nvd_get_json(
         headers["apiKey"] = api_key
 
     req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        raw = resp.read().decode("utf-8", errors="replace")
-    data = json.loads(raw)
-    cache_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    return data, False
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                raw = resp.read().decode("utf-8", errors="replace")
+            data = json.loads(raw)
+            cache_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            return data, False
+        except Exception as exc:
+            last_exc = exc
+            if attempt < 2:
+                time.sleep(6.0 * (attempt + 1))
+    assert last_exc is not None
+    raise last_exc
 
 
 def _repology_get_cpes(pkg: str, refresh: bool = False) -> list[tuple[str, str]]:
@@ -471,6 +480,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
             if not from_cache:
                 last_net_call = time.time()
         except Exception as exc:
+            last_net_call = time.time()
             print(
                 f"ERROR: NVD API request failed for {vendor}:{product} ({', '.join(pkgs)}): {exc}",
                 file=sys.stderr,

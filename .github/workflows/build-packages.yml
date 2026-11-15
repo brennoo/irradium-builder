@@ -8,6 +8,9 @@ on:
       - "packages/**"
       - "ports/**"
       - "builder/**"
+      - "!builder/vulntool/**"
+      - "!builder/cpe-map.tsv"
+      - "!builder/vex/**"
       - ".github/workflows/build-packages.yml"
   workflow_run:
     workflows: ["Sync Upstream Port Submodules"]
