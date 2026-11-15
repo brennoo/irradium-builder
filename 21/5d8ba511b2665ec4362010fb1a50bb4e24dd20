@@ -1,0 +1,86 @@
+builder/vex/apache.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/binutils.json
+  h_c872c6f1ba48bc 1-38
+builder/vex/db.json
+  h_c872c6f1ba48bc 1-137
+builder/vex/firefox.json
+  h_c872c6f1ba48bc 1-47
+builder/vex/glibc.json
+  h_c872c6f1ba48bc 1-38
+builder/vex/gnutls.json
+  h_c872c6f1ba48bc 1-50
+builder/vex/gtk.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/harfbuzz.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/hostapd.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/libsdl.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/libsoup.json
+  h_c872c6f1ba48bc 1-38
+builder/vex/libssh2.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/libxslt.json
+  h_c872c6f1ba48bc 1-10
+builder/vex/lrzsz.json
+  h_c872c6f1ba48bc 1-10
+builder/vex/net-snmp.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/nss.json
+  h_c872c6f1ba48bc 1-38
+builder/vex/openssh.json
+  h_c872c6f1ba48bc 1-29
+builder/vex/rust.json
+  h_c872c6f1ba48bc 1-20
+builder/vex/sassc.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/unzip.json
+  h_c872c6f1ba48bc 1-34
+builder/vex/wpa_supplicant.json
+  h_c872c6f1ba48bc 1-11
+builder/vex/xorg-server.json
+  h_c872c6f1ba48bc 1-36
+builder/vulntool/ports.py
+  h_c872c6f1ba48bc 627,690-691,695-696
+packages/build.txt
+  h_c872c6f1ba48bc 11-12
+ports/custom/custom-contrib/net-snmp/.override
+  h_c872c6f1ba48bc 1-8
+ports/custom/custom-contrib/net-snmp/Pkgfile
+  h_c872c6f1ba48bc 1-66
+ports/custom/custom-contrib/net-snmp/net-snmp-5.7.2-cert-path.patch
+  h_c872c6f1ba48bc 1-30
+ports/custom/custom-contrib/net-snmp/net-snmp-5.7.3-iterator-fix.patch
+  h_c872c6f1ba48bc 1-14
+ports/custom/custom-contrib/net-snmp/net-snmp-5.8-Remove-U64-typedef.patch
+  h_c872c6f1ba48bc 1-12
+ports/custom/custom-contrib/net-snmp/net-snmp-5.8-modern-rpm-api.patch
+  h_c872c6f1ba48bc 1-83
+ports/custom/custom-contrib/net-snmp/net-snmp-5.8-multilib.patch
+  h_c872c6f1ba48bc 1-45
+ports/custom/custom-contrib/net-snmp/rc.snmpd
+  h_c872c6f1ba48bc 1-38
+ports/custom/custom-contrib/net-snmp/snmpd.conf
+  h_c872c6f1ba48bc 1-455
+ports/custom/custom-contrib/net-snmp/snmpd.default
+  h_c872c6f1ba48bc 1-2
+ports/custom/custom-contrib/net-snmp/snmpd.logrotate
+  h_c872c6f1ba48bc 1-11
+ports/custom/custom-core/binutils/.override
+  h_c872c6f1ba48bc 1-8
+ports/custom/custom-core/binutils/Pkgfile
+  h_c872c6f1ba48bc 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "215d8ba511b2665ec4362010fb1a50bb4e24dd20",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
