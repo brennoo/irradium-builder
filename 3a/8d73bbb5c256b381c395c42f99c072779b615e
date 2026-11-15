@@ -1,0 +1,33 @@
+builder/cpe-map.tsv
+  s_729387da5f4d60::t_11b782ed17e556 12-14
+  s_849ac0f0edb1fc::t_b3c418cb9f32b9 6
+  s_849ac0f0edb1fc::t_f02c384057a5e7 3-5
+  s_729387da5f4d60::t_ac7205c17e18fb 15-17
+builder/clearinghouse-workflow.md
+  s_849ac0f0edb1fc::t_0575bd0b368edf 22-24,106-114,156-158,193-196,217,219-220,222,263-272
+  s_849ac0f0edb1fc::t_4971ee304f1afd 1-21,25-105,115-155,159-192,197-216,218,221,223-262
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3a8d73bbb5c256b381c395c42f99c072779b615e",
+  "prompts": {},
+  "sessions": {
+    "s_729387da5f4d60": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0c33e1c3-ea58-4656-8c88-30ca611a7d78",
+        "model": "arn:aws:bedrock:us-east-1:859822527547:application-inference-profile/wm8snz9s5mkh"
+      },
+      "human_author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    },
+    "s_849ac0f0edb1fc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e5e4d60d-ad99-49f4-a2f7-db1b5cf152e0",
+        "model": "arn:aws:bedrock:us-east-1:859822527547:application-inference-profile/wm8snz9s5mkh"
+      },
+      "human_author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
