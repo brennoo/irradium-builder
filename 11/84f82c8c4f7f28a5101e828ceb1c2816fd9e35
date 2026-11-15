@@ -1,0 +1,22 @@
+README.md
+  s_31b3c1e631d76f::t_c07a19a9f0d782 3-7
+.github/workflows/vuln-scan.yml
+  s_31b3c1e631d76f::t_93e53a4d26114c 21
+  s_31b3c1e631d76f::t_77bdc86a4a48fd 120-154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1184f82c8c4f7f28a5101e828ceb1c2816fd9e35",
+  "prompts": {},
+  "sessions": {
+    "s_31b3c1e631d76f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "856aa0e8-95e6-4baa-bb74-e86e036fa28a",
+        "model": "arn:aws:bedrock:us-east-1:859822527547:application-inference-profile/91g0tmwsr0ga"
+      },
+      "human_author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
