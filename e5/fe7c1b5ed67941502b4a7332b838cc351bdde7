@@ -1,0 +1,62 @@
+.github/workflows/build-packages.yml
+  h_c872c6f1ba48bc 1-82
+.github/workflows/sync-submodules.yml
+  h_c872c6f1ba48bc 1-31
+.gitignore
+  h_c872c6f1ba48bc 1-11
+.gitmodules
+  h_c872c6f1ba48bc 1-20
+README.md
+  h_c872c6f1ba48bc 1-95
+builder/Dockerfile
+  h_c872c6f1ba48bc 1-16
+builder/bootstrap.py
+  h_c872c6f1ba48bc 1-226
+builder/build-pkg.sh
+  h_c872c6f1ba48bc 1-512
+builder/gen-index.py
+  h_c872c6f1ba48bc 1-158
+keys/pkg-get.pub
+  h_c872c6f1ba48bc 1-2
+packages/build.txt
+  h_c872c6f1ba48bc 1-7
+packages/upstream.txt
+  h_c872c6f1ba48bc 1-11
+ports/crux-contrib
+  h_c872c6f1ba48bc 1
+ports/crux-core
+  h_c872c6f1ba48bc 1
+ports/crux-opt
+  h_c872c6f1ba48bc 1
+ports/crux-xorg
+  h_c872c6f1ba48bc 1
+ports/custom/custom-opt/REPO
+  h_c872c6f1ba48bc 1-8
+ports/custom/custom-opt/REPO.sig
+  h_c872c6f1ba48bc 1-10
+ports/custom/custom-opt/notqmail/.footprint
+  h_c872c6f1ba48bc 1-226
+ports/custom/custom-opt/notqmail/.md5sum
+  h_c872c6f1ba48bc 1-4
+ports/custom/custom-opt/notqmail/Pkgfile
+  h_c872c6f1ba48bc 1-33
+ports/custom/custom-opt/notqmail/post-install
+  h_c872c6f1ba48bc 1-2
+ports/custom/custom-opt/notqmail/pre-install
+  h_c872c6f1ba48bc 1-23
+ports/custom/custom-opt/notqmail/qmail.rc
+  h_c872c6f1ba48bc 1-31
+ports/irradium
+  h_c872c6f1ba48bc 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e5fe7c1b5ed67941502b4a7332b838cc351bdde7",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
