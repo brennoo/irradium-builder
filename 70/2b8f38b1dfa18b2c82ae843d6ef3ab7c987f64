@@ -1,0 +1,18 @@
+.github/workflows/build-packages.yml
+  h_c872c6f1ba48bc 11-13
+builder/build-pkg.sh
+  h_c872c6f1ba48bc 193-194,196-201,215-217,499-500,507-508
+builder/vulntool/cpe.py
+  h_c872c6f1ba48bc 234-247,483
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "702b8f38b1dfa18b2c82ae843d6ef3ab7c987f64",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
