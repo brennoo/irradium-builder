@@ -1,0 +1,18 @@
+.github/workflows/build-packages.yml
+  h_c872c6f1ba48bc 54,60
+.github/workflows/sync-submodules.yml
+  h_c872c6f1ba48bc 17
+.github/workflows/vuln-scan.yml
+  h_c872c6f1ba48bc 49,55,91,110,136,139-142
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6d5d85880cd51f221cfbbb4ab4088458a524f6a6",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
