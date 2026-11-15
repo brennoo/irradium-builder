@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "harfbuzz",
+    "version": "*",
+    "cve": "CVE-2026-113679",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Affects only the experimental WebAssembly shaper (-Dwasm=enabled with WAMR), which is disabled in irradium-opt/harfbuzz",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "wpa_supplicant",
+    "version": "*",
+    "cve": "CVE-2024-5290",
+    "status": "not_affected",
+    "justification": "inline_mitigations_already_exist",
+    "note": "Distribution-specific D-Bus netdev group policy issue in Ubuntu/SUSE packaging; NVD left w1.fi:wpa_supplicant CPE unbounded",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

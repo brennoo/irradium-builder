@@ -1,0 +1,38 @@
+[
+  {
+    "pkg": "glibc",
+    "version": "*",
+    "cve": "CVE-2019-1010022",
+    "status": "not_affected",
+    "justification": "inline_mitigations_already_exist",
+    "note": "Disputed by upstream GNU C Library security team as a non-security issue",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "glibc",
+    "version": "*",
+    "cve": "CVE-2019-1010023",
+    "status": "not_affected",
+    "justification": "inline_mitigations_already_exist",
+    "note": "Disputed by upstream GNU C Library security team; running ldd on untrusted ELF files is documented as unsafe by design",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "glibc",
+    "version": "*",
+    "cve": "CVE-2026-84243",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Applies only to non-setuid (!AT_SECURE) processes where the caller already controls the LANGUAGE environment variable",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "glibc",
+    "version": "*",
+    "cve": "CVE-2026-0915",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Requires /etc/nsswitch.conf to specify the dns backend for networks; irradium-core/glibc ships nsswitch.conf with 'networks: files' only",
+    "timestamp": "2026-11-15T22:40:00Z"
+  }
+]

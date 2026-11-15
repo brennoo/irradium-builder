@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "sassc",
+    "version": "3.6.2",
+    "cve": "CVE-2022-43357",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Flaw resides in libsass ast_selectors.cpp (3.6.5) and is fixed in shipped libsass 3.6.6-1; sassc 3.6.2 is a thin CLI wrapper dynamically linked against libsass.so",
+    "timestamp": "2026-11-15T22:20:00Z"
+  }
+]

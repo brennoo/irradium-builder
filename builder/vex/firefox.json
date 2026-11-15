@@ -1,0 +1,47 @@
+[
+  {
+    "pkg": "firefox",
+    "version": "*",
+    "cve": "CVE-2007-2176",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Historical 2007 Firefox 2.x entry with unbounded NVD CPE",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "firefox",
+    "version": "*",
+    "cve": "CVE-2007-4013",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects Citrix Access Gateway Windows NPAPI DLL (npCtxCAO.dll), not Mozilla Firefox",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "firefox",
+    "version": "*",
+    "cve": "CVE-2009-1597",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Historical 2009 Adobe Acrobat NPAPI PDF plugin interaction in Firefox 3.x with unbounded NVD CPE",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "firefox",
+    "version": "*",
+    "cve": "CVE-2009-4102",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects third-party Sage 1.4.3 RSS extension for Firefox 3.x, not Mozilla Firefox",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "firefox",
+    "version": "*",
+    "cve": "CVE-2014-6492",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects Oracle Java SE 6/7/8 NPAPI deployment plugin, not Mozilla Firefox",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

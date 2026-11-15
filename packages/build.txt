@@ -8,3 +8,5 @@ nmap
 notqmail
 lua53
 haproxy
+net-snmp
+binutils

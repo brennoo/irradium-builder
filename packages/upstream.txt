@@ -10,7 +10,6 @@ libssh2
 
 # irradium-core (27)
 bash
-binutils
 bonding
 cmake
 db
@@ -200,7 +199,6 @@ mkinitramfs
 mpp
 mpv
 mtd-utils
-net-snmp
 nmon
 nss-pam-ldapd
 ntp

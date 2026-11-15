@@ -1,0 +1,8 @@
+origin=irradium-core/binutils
+origin_commit=aeaa36c49834de89422766d2334c88e7b771013a
+origin_version=2.43.1-1
+reason=CVE-2025-0840,CVE-2025-5244,CVE-2025-5245,CVE-2025-69649
+cves=CVE-2025-0840,CVE-2025-5244,CVE-2025-5245,CVE-2025-69649
+retire_when=upstream_version>=2.47|upstream_has_cve_patch
+was_prebuilt=yes
+created=2026-11-16

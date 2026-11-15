@@ -624,8 +624,7 @@ def resolve_ports(
             if p in published:
                 _add(p)
         for p in build_list:
-            if p in published:
-                _add(p)
+            _add(p)
         for repo_pkg in sorted(local_repo.keys()):
             _add(repo_pkg)
         for mir_pkg in sorted(mirror_repo.keys()):
@@ -688,9 +687,13 @@ def resolve_ports(
         if entry.name in local_repo:
             ver, rel, _ = local_repo[entry.name]
             ver_src = "repo"
+            if source_kind == "build" and pkg_ver and versions.vercmp(f"{pkg_ver}-{pkg_rel}", f"{ver}-{rel}") > 0:
+                ver, rel, ver_src = pkg_ver, pkg_rel, "pkgfile"
         elif only_published and entry.name in mirror_repo:
             ver, rel, _ = mirror_repo[entry.name]
             ver_src = "mirror"
+            if source_kind == "build" and pkg_ver and versions.vercmp(f"{pkg_ver}-{pkg_rel}", f"{ver}-{rel}") > 0:
+                ver, rel, ver_src = pkg_ver, pkg_rel, "pkgfile"
         elif source_kind == "build":
             ver, rel, ver_src = pkg_ver, pkg_rel, "pkgfile"
         elif entry.name in mirror_repo:

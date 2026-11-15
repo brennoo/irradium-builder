@@ -1,0 +1,38 @@
+[
+  {
+    "pkg": "nss",
+    "version": "*",
+    "cve": "CVE-2017-11695",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "2017 NSS 3.31 legacy lib/dbm flaw fixed upstream in NSS 3.33+; NVD left mozilla:network_security_services CPE unbounded",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "nss",
+    "version": "*",
+    "cve": "CVE-2017-11696",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "2017 NSS 3.31 legacy lib/dbm flaw fixed upstream in NSS 3.33+; NVD left mozilla:network_security_services CPE unbounded",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "nss",
+    "version": "*",
+    "cve": "CVE-2017-11697",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "2017 NSS 3.31 legacy lib/dbm flaw fixed upstream in NSS 3.33+; NVD left mozilla:network_security_services CPE unbounded",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "nss",
+    "version": "*",
+    "cve": "CVE-2017-11698",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "2017 NSS 3.31 legacy lib/dbm flaw fixed upstream in NSS 3.33+; NVD left mozilla:network_security_services CPE unbounded",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

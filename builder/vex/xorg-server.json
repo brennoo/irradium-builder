@@ -1,0 +1,36 @@
+[
+  {
+    "pkg": "xorg-server",
+    "version": "*",
+    "cve": "CVE-2020-25697",
+    "status": "not_affected",
+    "justification": "inline_mitigations_already_exist",
+    "note": "Unbounded Red Hat note regarding X11 client authentication when Xauth is disabled; not an xorg-server code flaw",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "xorg-server",
+    "version": "*",
+    "cve": "CVE-2023-5574",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Fixed upstream in xorg-server 21.1.10 (commit b32e4f46); NVD CPE range lacked an upper version bound",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "xorg-server",
+    "version": "21.1.26",
+    "cve": "CVE-2026-55999",
+    "status": "fixed",
+    "note": "Fixed upstream in xorg-server 21.1.24 (commit fbf7bac2 per X.Org oss-security 2026/07/08/2 advisory); NVD CPE range has a typo (< 21.2.24 instead of < 21.1.24)",
+    "timestamp": "2026-11-15T22:48:00Z"
+  },
+  {
+    "pkg": "xorg-server",
+    "version": "21.1.26",
+    "cve": "CVE-2026-56000",
+    "status": "fixed",
+    "note": "Fixed upstream in xorg-server 21.1.24 (commit 2779affb per X.Org oss-security 2026/07/08/2 advisory); NVD CPE range has a typo (< 21.2.24 instead of < 21.1.24)",
+    "timestamp": "2026-11-15T22:48:00Z"
+  }
+]

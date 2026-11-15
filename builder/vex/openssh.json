@@ -1,0 +1,29 @@
+[
+  {
+    "pkg": "openssh",
+    "version": "*",
+    "cve": "CVE-2008-3844",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "2008 RHEL 4/5 package signing incident; never an upstream OpenSSH code vulnerability",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "openssh",
+    "version": "*",
+    "cve": "CVE-2023-51767",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Disputed rowhammer single-bit flip claim rejected by upstream OpenSSH",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "openssh",
+    "version": "*",
+    "cve": "CVE-2026-3497",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects third-party Linux distribution GSSAPI key-exchange patchset only, not upstream OpenSSH built by crux-core/openssh",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

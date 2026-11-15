@@ -1,0 +1,10 @@
+[
+  {
+    "pkg": "lrzsz",
+    "version": "0.12.20",
+    "cve": "CVE-2018-10195",
+    "status": "fixed",
+    "note": "Patched in irradium-contrib/lrzsz via lrzsz-0.12.20.patch (replaces do-while(--length>0) with for(;length;length--) in zsdata)",
+    "timestamp": "2026-11-15T22:15:00Z"
+  }
+]

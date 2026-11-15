@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "gtk",
+    "version": "*",
+    "cve": "CVE-2014-1949",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects GTK+ 3.10.9 lock-screen menu key handling in cinnamon-screensaver/gnome-screensaver; not applicable to GTK+ 2.24",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

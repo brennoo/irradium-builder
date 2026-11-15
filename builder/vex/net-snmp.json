@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "net-snmp",
+    "version": "*",
+    "cve": "CVE-2026-89147",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Affects the optional legacy RFC 1227 SMUX module (--with-mib-modules=smux), which is not enabled in irradium-contrib/net-snmp",
+    "timestamp": "2026-11-15T22:15:00Z"
+  }
+]

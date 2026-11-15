@@ -1,0 +1,8 @@
+origin=irradium-contrib/net-snmp
+origin_commit=aeaa36c49834de89422766d2334c88e7b771013a
+origin_version=5.9.4-1
+reason=CVE-2025-68615
+cves=CVE-2025-68615
+retire_when=upstream_version>=5.9.5.2|upstream_has_cve_patch
+was_prebuilt=yes
+created=2026-11-16

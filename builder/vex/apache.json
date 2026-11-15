@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "apache",
+    "version": "*",
+    "cve": "CVE-2025-3891",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects third-party mod_auth_openidc module (OIDCPreservePost), not Apache httpd core; NVD attached an unbounded apache:http_server CPE",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

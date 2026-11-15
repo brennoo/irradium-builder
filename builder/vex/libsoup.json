@@ -1,0 +1,38 @@
+[
+  {
+    "pkg": "libsoup",
+    "version": "2.74.3",
+    "cve": "CVE-2026-2436",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects libsoup 3.x soup_server_disconnect() TLS handshake handling; not present in legacy libsoup 2.74.3",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "libsoup",
+    "version": "2.74.3",
+    "cve": "CVE-2026-4271",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects the HTTP/2 server implementation introduced in libsoup 3.x; legacy libsoup 2.74.3 only supports HTTP/1.x",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "libsoup",
+    "version": "2.74.3",
+    "cve": "CVE-2026-102555",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects soup_uri_decode_data_uri() introduced in libsoup 3.x; not present in legacy libsoup 2.74.3",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "libsoup",
+    "version": "2.74.3",
+    "cve": "CVE-2026-102556",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects libsoup 3.x where SoupWebsocketConnection::pong was changed to declare GBytes while still emitting GByteArray; in legacy libsoup 2.74.3 the ::pong signal is declared as G_TYPE_BYTE_ARRAY",
+    "timestamp": "2026-11-15T22:35:00Z"
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "libsdl",
+    "version": "*",
+    "cve": "CVE-2019-14906",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_present",
+    "note": "Affects only Red Hat Enterprise Linux 7 RHSA-2019:3950 incomplete erratum packaging, not upstream SDL",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

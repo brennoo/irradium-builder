@@ -1,0 +1,20 @@
+[
+  {
+    "pkg": "rust",
+    "version": "*",
+    "cve": "CVE-2024-24576",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Windows-only cmd.exe batch file (.bat/.cmd) argument escaping flaw in std::process::Command; Linux targets are unaffected",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "rust",
+    "version": "*",
+    "cve": "CVE-2024-43402",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Windows-only cmd.exe batch file invocation bypass for CVE-2024-24576; Linux targets are unaffected",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

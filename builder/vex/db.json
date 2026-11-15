@@ -1,0 +1,137 @@
+[
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3604",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3605",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3606",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3607",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3608",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3609",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3610",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3611",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3612",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3613",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3614",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3615",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3616",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2017-3617",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "db",
+    "version": "5.3.28",
+    "cve": "CVE-2020-2981",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Oracle Berkeley DB Data Store advisory; irradium-core/db builds local C/C++ libraries only without SQL/Java/JDBC",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

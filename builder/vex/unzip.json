@@ -1,0 +1,34 @@
+[
+  {
+    "pkg": "unzip",
+    "version": "6.0",
+    "cve": "CVE-2014-8139",
+    "status": "fixed",
+    "note": "Patched in crux-opt/unzip via cumulative.patch (TestExtraField EB_PKVMS_MINLEN check)",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "unzip",
+    "version": "6.0",
+    "cve": "CVE-2014-8140",
+    "status": "fixed",
+    "note": "Patched in crux-opt/unzip via cumulative.patch (test_compr_eb eb_ucsize check)",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "unzip",
+    "version": "6.0",
+    "cve": "CVE-2014-8141",
+    "status": "fixed",
+    "note": "Patched in crux-opt/unzip via cumulative.patch (getZip64Data bounds checks)",
+    "timestamp": "2026-11-15T22:10:00Z"
+  },
+  {
+    "pkg": "unzip",
+    "version": "6.0",
+    "cve": "CVE-2018-1000035",
+    "status": "fixed",
+    "note": "Patched in crux-opt/unzip via cumulative.patch (crypt.c decrypt and extract.c csiz_decrypted bounds check)",
+    "timestamp": "2026-11-15T22:10:00Z"
+  }
+]

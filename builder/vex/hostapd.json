@@ -1,0 +1,11 @@
+[
+  {
+    "pkg": "hostapd",
+    "version": "2.11",
+    "cve": "CVE-2026-58374",
+    "status": "not_affected",
+    "justification": "vulnerable_code_not_in_execute_path",
+    "note": "Affects Wi-Fi 7 (IEEE 802.11be) Multi-Link Operation (CONFIG_IEEE80211BE), which is not enabled in irradium-contrib/hostapd config",
+    "timestamp": "2026-11-15T22:15:00Z"
+  }
+]
