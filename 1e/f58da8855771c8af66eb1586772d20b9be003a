@@ -1,0 +1,18 @@
+.github/workflows/build-packages.yml
+  h_c872c6f1ba48bc 61-69
+builder/bootstrap.py
+  h_c872c6f1ba48bc 67-88,115-116,162-163,165-167
+builder/build-pkg.sh
+  h_c872c6f1ba48bc 284-285,293-299,398-407,411-413
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1ef58da8855771c8af66eb1586772d20b9be003a",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
