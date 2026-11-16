@@ -1,0 +1,14 @@
+ports/custom/custom-contrib/net-snmp/Pkgfile
+  h_c872c6f1ba48bc 53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a784f2242d1b333e7c6cbe7e72a5b5d937ebda5",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
