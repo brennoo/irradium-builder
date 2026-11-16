@@ -407,9 +407,224 @@ check_existing() {
                 fi
                 return 0
             fi
+            local up_base up_cat up_encoded up_fname
+            for up_base in \
+                "https://mirror.accum.se/mirror/irradium.org/packages/${ARCH:-riscv64}/${DISTR_VERSION:-3.8}" \
+                "https://ftp.cc.uoc.gr/mirrors/linux/irradium/packages/${ARCH:-riscv64}/${DISTR_VERSION:-3.8}" \
+                "https://dl.irradium.org/irradium/packages/${ARCH:-riscv64}/${DISTR_VERSION:-3.8}"; do
+                for up_cat in "$category" core opt xorg xfce contrib; do
+                    up_encoded="$(curl -A "irradium-builder/1.0" -fsSL "${up_base}/${up_cat}/" 2>/dev/null \
+                        | grep -oE "href=\"(${name}%23[^\"]+\\.pkg\\.tar\\.gz|${name}#[^\"]+\\.pkg\\.tar\\.gz)\"" \
+                        | sed -E 's/^href="|"$//g' \
+                        | sort -V \
+                        | tail -n 1 || true)"
+                    if [[ -n "$up_encoded" ]]; then
+                        up_fname="${up_encoded//%23/#}"
+                        echo "==> [$mode_label:DEP] Fetching upstream pre-built dependency $up_cat/$up_fname"
+                        curl -A "irradium-builder/1.0" -fsSL "${up_base}/${up_cat}/${up_encoded}" -o "/var/cache/pkgmk/packages/$up_fname"
+                        curl -A "irradium-builder/1.0" -fsSL "${up_base}/${up_cat}/${up_encoded}.sig" -o "/var/cache/pkgmk/packages/${up_fname}.upstream.sig"
+                        signify -p /tmp/irradium-upstream.pub -V -q -m "/var/cache/pkgmk/packages/$up_fname" -x "/var/cache/pkgmk/packages/${up_fname}.upstream.sig"
+                        cp -f "/var/cache/pkgmk/packages/$up_fname" "/repo/$category/$up_fname"
+                        signify -s /etc/pkg-get/pkg-get.sec -S -m "/repo/$category/$up_fname" -x "/repo/$category/${up_fname}.sig"
+                        if ! prt-get isinst "$name" >/dev/null 2>&1; then
+                            pkgadd "/var/cache/pkgmk/packages/$up_fname"
+                        fi
+                        rm -f "/var/cache/pkgmk/packages/${up_fname}.upstream.sig"
+                        return 0
+                    fi
+                done
+            done
         fi
     fi
     return 1
+}
+
+ensure_implicit_deps() {
+    local pass=0
+    local max_passes=6
+    local seen_ports=" "
+    while (( pass < max_passes )); do
+        pass=$((pass + 1))
+        local missing_ports
+        missing_ports="$(python3 - <<'PYEOF'
+import os
+import pathlib
+import re
+import subprocess
+
+# 1. Read currently installed packages from /var/lib/pkg/db
+installed_pkgs = set()
+db_file = pathlib.Path("/var/lib/pkg/db")
+if db_file.is_file():
+    lines = db_file.read_text(encoding="utf-8", errors="replace").splitlines()
+    i = 0
+    while i < len(lines):
+        pkgname = lines[i].strip()
+        if pkgname:
+            installed_pkgs.add(pkgname)
+        i += 2
+        while i < len(lines) and lines[i].strip():
+            i += 1
+        i += 1
+
+# 2. Collect missing pkg-config modules from installed .pc files (Requires & Requires.private)
+pc_dirs = ["/usr/lib/pkgconfig", "/usr/share/pkgconfig", "/usr/lib64/pkgconfig"]
+installed_pcs = set()
+pc_files = []
+for d in pc_dirs:
+    if os.path.isdir(d):
+        for entry in os.scandir(d):
+            if entry.name.endswith(".pc") and (entry.is_file() or entry.is_symlink()):
+                installed_pcs.add(entry.name[:-3])
+                pc_files.append(entry.path)
+
+var_re = re.compile(r"^([A-Za-z0-9_]+)\s*=\s*(.*)$")
+req_re = re.compile(r"^Requires(?:\.private)?\s*:\s*(.*)$")
+ver_constraint_re = re.compile(r"(?:<=|>=|!=|=|<|>)\s*[^\s,]+")
+var_ref_re = re.compile(r"\$\{([A-Za-z0-9_]+)\}")
+
+missing_pcs = set()
+for pc_path in pc_files:
+    try:
+        text = pathlib.Path(pc_path).read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        continue
+    text = text.replace("\\\n", " ")
+    pc_vars = {}
+    req_lines = []
+    for raw_line in text.splitlines():
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        m_var = var_re.match(line)
+        if m_var:
+            k, v = m_var.group(1), m_var.group(2).strip()
+            pc_vars[k] = var_ref_re.sub(lambda m: pc_vars.get(m.group(1), ""), v)
+            continue
+        m_req = req_re.match(line)
+        if m_req:
+            req_lines.append(m_req.group(1))
+    for req_str in req_lines:
+        expanded = var_ref_re.sub(lambda m: pc_vars.get(m.group(1), ""), req_str)
+        cleaned = ver_constraint_re.sub(" ", expanded)
+        for tok in re.split(r"[\s,]+", cleaned.strip()):
+            if tok and not tok.startswith("$") and tok not in installed_pcs:
+                missing_pcs.add(tok + ".pc")
+
+# 3. Collect missing DT_NEEDED shared libraries from /lib and /usr/lib
+lib_dirs = ["/lib", "/usr/lib", "/lib64", "/usr/lib64"]
+installed_sos = set()
+so_paths = []
+for d in lib_dirs:
+    if os.path.isdir(d):
+        for entry in os.scandir(d):
+            if ".so" in entry.name and (entry.is_file() or entry.is_symlink()):
+                installed_sos.add(entry.name)
+                if entry.is_file(follow_symlinks=True):
+                    so_paths.append(entry.path)
+
+missing_sos = set()
+if so_paths:
+    try:
+        res = subprocess.run(
+            ["readelf", "-d", *so_paths],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        for m in re.finditer(r"\(NEEDED\)\s+Shared library:\s+\[([^\]]+)\]", res.stdout):
+            soname = m.group(1)
+            if soname not in installed_sos:
+                missing_sos.add(soname)
+    except OSError:
+        pass
+
+if not missing_pcs and not missing_sos:
+    raise SystemExit(0)
+
+# 4. Map missing .pc and .so files to ports via /usr/ports/*/*/.footprint in prt-get priority order
+prt_order = [
+    "custom-core", "custom-opt", "custom-xorg", "custom-xfce", "custom-contrib",
+    "irradium-core", "irradium-opt", "irradium-xorg", "irradium-xfce", "irradium-contrib",
+    "core", "opt", "xorg", "contrib",
+]
+seen_port_defs = set()
+pc_to_port = {}
+so_to_port = {}
+for col in prt_order:
+    col_dir = pathlib.Path("/usr/ports") / col
+    if not col_dir.is_dir():
+        continue
+    for port_dir in col_dir.iterdir():
+        pkg = port_dir.name
+        if pkg in seen_port_defs:
+            continue
+        fp = port_dir / ".footprint"
+        if not fp.is_file():
+            continue
+        seen_port_defs.add(pkg)
+        try:
+            lines = fp.read_text(encoding="utf-8", errors="ignore").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            parts = line.split("\t")
+            if len(parts) < 3:
+                continue
+            f_path = parts[2].split(" -> ", 1)[0].strip().lstrip("/")
+            dirname = os.path.dirname(f_path)
+            basename = os.path.basename(f_path)
+            if dirname in ("usr/lib/pkgconfig", "usr/share/pkgconfig", "usr/lib64/pkgconfig") and basename in missing_pcs:
+                pc_to_port.setdefault(basename, pkg)
+            elif dirname in ("lib", "usr/lib", "lib64", "usr/lib64") and basename in missing_sos:
+                so_to_port.setdefault(basename, pkg)
+
+needed_ports = sorted(
+    (set(pc_to_port.values()) | set(so_to_port.values())) - installed_pkgs
+)
+for pkg in needed_ports:
+    print(pkg)
+PYEOF
+)"
+        if [[ -z "$missing_ports" ]]; then
+            break
+        fi
+        local added_any="no"
+        while IFS= read -r impl_pkg; do
+            [[ -z "$impl_pkg" ]] && continue
+            if [[ "$seen_ports" == *" $impl_pkg "* ]]; then
+                continue
+            fi
+            seen_ports="${seen_ports}${impl_pkg} "
+            local impl_deps
+            impl_deps="$(prt-get depends "$impl_pkg" 2>/dev/null || true)"
+            if [[ -n "$impl_deps" && "$impl_deps" != *"not found"* ]]; then
+                while IFS= read -r dline; do
+                    if [[ "$dline" =~ \[\ \]\ ([^[:space:]]+) ]]; then
+                        local sub_dep="${BASH_REMATCH[1]}"
+                        local sub_path
+                        sub_path="$(prt-get path "$sub_dep" 2>/dev/null || true)"
+                        if [[ -n "$sub_path" && -f "$sub_path/Pkgfile" ]]; then
+                            echo "==> [BUILD:IMPLICIT-DEP] Installing transitive .pc/.so dependency $sub_dep (via $impl_pkg)"
+                            build_single_port "$sub_path" "dep" </dev/null
+                            added_any="yes"
+                        fi
+                    fi
+                done <<< "$impl_deps"
+            elif ! prt-get isinst "$impl_pkg" >/dev/null 2>&1; then
+                local impl_path
+                impl_path="$(prt-get path "$impl_pkg" 2>/dev/null || true)"
+                if [[ -n "$impl_path" && -f "$impl_path/Pkgfile" ]]; then
+                    echo "==> [BUILD:IMPLICIT-DEP] Installing transitive .pc/.so dependency $impl_pkg"
+                    build_single_port "$impl_path" "dep" </dev/null
+                    added_any="yes"
+                fi
+            fi
+        done <<< "$missing_ports"
+        if [[ "$added_any" == "no" ]]; then
+            break
+        fi
+    done
 }
 
 build_single_port() {
@@ -433,6 +648,14 @@ build_single_port() {
 
     if check_existing "$category" "$name" "$pkg_file" "$encoded_pkg" "BUILD" "$allow_any"; then
         return 0
+    fi
+
+    if [[ "$role" == "target" ]]; then
+        ensure_implicit_deps
+        cd "$port_dir"
+        unset name version release source
+        # shellcheck disable=SC1091
+        source Pkgfile
     fi
 
     echo "==> [BUILD] Compiling $collection/$name (${version}-${release})..."

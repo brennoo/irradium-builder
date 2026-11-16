@@ -1,7 +1,7 @@
 # Description: A weather plugin for the Xfce4 panel
 # URL: https://docs.xfce.org/panel-plugins/xfce4-weather-plugin
 # Maintainer: mara, mara at fail dot pp dot ua
-# Depends on: xfce4-panel intltool libsoup3 json-c brotli graphite2 icu libxkbcommon xorg-libxcomposite xorg-libxcursor xorg-libxinerama
+# Depends on: xfce4-panel intltool libsoup3 json-c brotli elogind graphite2 icu libxkbcommon xorg-libxcomposite xorg-libxcursor xorg-libxinerama
 
 name=xfce4-weather-plugin
 version=0.12.0
