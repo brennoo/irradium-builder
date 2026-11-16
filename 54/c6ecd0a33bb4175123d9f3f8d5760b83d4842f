@@ -1,0 +1,24 @@
+builder/build-pkg.sh
+  h_c872c6f1ba48bc 361,363,371,374-375,381-409,416,428-433,728,730-731,737
+builder/vulntool/ports.py
+  h_c872c6f1ba48bc 622-627,634-635,637-638
+packages/build.txt
+  h_c872c6f1ba48bc 13
+ports/custom/custom-xfce/xfce4-weather-plugin/.footprint
+  h_c872c6f1ba48bc 1-496
+ports/custom/custom-xfce/xfce4-weather-plugin/.override
+  h_c872c6f1ba48bc 1-8
+ports/custom/custom-xfce/xfce4-weather-plugin/Pkgfile
+  h_c872c6f1ba48bc 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "54c6ecd0a33bb4175123d9f3f8d5760b83d4842f",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
