@@ -526,14 +526,17 @@ def fetch_upstream_irradium_index(
                 parsed = parse_pkg_filename(m.group(1))
                 if parsed:
                     name, ver, rel = parsed
-                    cat_items[name] = (ver, rel, cat)
+                    if name not in cat_items or versions.vercmp(f"{ver}-{rel}", f"{cat_items[name][0]}-{cat_items[name][1]}") > 0:
+                        cat_items[name] = (ver, rel, cat)
         except Exception:
             pass
         return cat_items
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
         for items in ex.map(_fetch_cat, CATEGORIES):
-            found.update(items)
+            for name, (ver, rel, cat) in items.items():
+                if name not in found or versions.vercmp(f"{ver}-{rel}", f"{found[name][0]}-{found[name][1]}") > 0:
+                    found[name] = (ver, rel, cat)
 
     return found
 

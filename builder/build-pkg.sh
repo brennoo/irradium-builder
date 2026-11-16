@@ -380,7 +380,7 @@ check_existing() {
         fi
         if [[ "$allow_any_version" == "yes" ]]; then
             local local_cand
-            local_cand="$(compgen -G "/repo/$category/${name}#*.pkg.tar.gz" | head -n 1 || true)"
+            local_cand="$(compgen -G "/repo/$category/${name}#*.pkg.tar.gz" | sort -V | tail -n 1 || true)"
             if [[ -n "$local_cand" && -f "${local_cand}.sig" ]]; then
                 local cand_base
                 cand_base="$(basename "$local_cand")"
@@ -393,8 +393,9 @@ check_existing() {
             local remote_encoded
             remote_encoded="$(curl -A "irradium-builder/1.0" -fsSL "${MIRROR_URL}/${category}/index.html" 2>/dev/null \
                 | grep -oE "href=\"(${name}%23[^\"]+\\.pkg\\.tar\\.gz|${name}#[^\"]+\\.pkg\\.tar\\.gz)\"" \
-                | head -n 1 \
-                | sed -E 's/^href="|"$//g' || true)"
+                | sed -E 's/^href="|"$//g' \
+                | sort -V \
+                | tail -n 1 || true)"
             if [[ -n "$remote_encoded" ]]; then
                 local remote_fname="${remote_encoded//%23/#}"
                 echo "==> [$mode_label:DEP] Installing mirror pre-built dependency $category/$remote_fname"
@@ -502,6 +503,11 @@ if not active_upstream:
 categories = ["core", "opt", "xorg", "xfce", "contrib"]
 
 # 1. Index packages available on upstream mirror (fail hard if any category fails or is empty)
+def _ver_key(fname):
+    ver_rel = re.sub(r"\.pkg\.tar\.[a-z0-9]+$", "", fname.split("#", 1)[-1])
+    parts = re.findall(r"\d+|[a-zA-Z]+", ver_rel)
+    return tuple((0, int(p)) if p.isdigit() else (1, p) for p in parts)
+
 upstream_index = {}  # pkg_name -> (upstream_cat, fname, encoded_fname)
 def fetch_upstream_cat(cat):
     url = f"{active_upstream}/{cat}/"
@@ -515,7 +521,8 @@ def fetch_upstream_cat(cat):
         fname = urllib.parse.unquote(raw_href)
         name = fname.split("#", 1)[0]
         encoded = urllib.parse.quote(fname)
-        found[name] = (cat, fname, encoded)
+        if name not in found or _ver_key(fname) > _ver_key(found[name][1]):
+            found[name] = (cat, fname, encoded)
     if not found:
         raise RuntimeError(f"Upstream category listing {url} returned 0 packages")
     return cat, found
@@ -523,7 +530,9 @@ def fetch_upstream_cat(cat):
 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
     for cat, found in ex.map(fetch_upstream_cat, categories):
         for name, info in found.items():
-            upstream_index[name] = info
+            # Preserve higher-priority categories (core > opt > xorg > xfce > contrib) unless a later category has a newer version
+            if name not in upstream_index or _ver_key(info[1]) > _ver_key(upstream_index[name][1]):
+                upstream_index[name] = info
 
 # 2. Index packages already published on MIRROR_URL (if skip_existing)
 mirror_existing = set()  # "cat/fname"
