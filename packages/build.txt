@@ -10,3 +10,4 @@ lua53
 haproxy
 net-snmp
 binutils
+xfce4-weather-plugin

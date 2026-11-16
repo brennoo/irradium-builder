@@ -619,16 +619,23 @@ def resolve_ports(
                     _add(dep)
     elif only_published and published:
         # Consider everything that ends up in the mirror/repo across all arches and sources,
-        # and skip unavailable / non-published-yet packages.
+        # and skip unavailable / non-published-yet or orphaned packages no longer in the dependency closure.
+        active_closure = (
+            set(upstream_list)
+            | set(build_list)
+            | set(resolve_dependency_closure(upstream_list + build_list, port_index=port_index))
+        )
         for p in upstream_list:
             if p in published:
                 _add(p)
         for p in build_list:
             _add(p)
         for repo_pkg in sorted(local_repo.keys()):
-            _add(repo_pkg)
+            if repo_pkg in active_closure or repo_pkg not in port_index:
+                _add(repo_pkg)
         for mir_pkg in sorted(mirror_repo.keys()):
-            _add(mir_pkg)
+            if mir_pkg in active_closure or mir_pkg not in port_index:
+                _add(mir_pkg)
     else:
         for p in upstream_list:
             _add(p)

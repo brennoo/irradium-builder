@@ -1,0 +1,8 @@
+origin=irradium-xfce/xfce4-weather-plugin
+origin_commit=67bd26eb0f026162a2969d6c9791318d5bdd0940
+origin_version=0.12.0-1
+reason=Rebuild against libsoup3 instead of deprecated libsoup 2.74.3
+cves=
+retire_when=upstream_version>=0.12.0-2
+was_prebuilt=yes
+created=2026-11-16

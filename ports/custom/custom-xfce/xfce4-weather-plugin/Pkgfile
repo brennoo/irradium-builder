@@ -1,0 +1,21 @@
+# Description: A weather plugin for the Xfce4 panel
+# URL: https://docs.xfce.org/panel-plugins/xfce4-weather-plugin
+# Maintainer: mara, mara at fail dot pp dot ua
+# Depends on: xfce4-panel intltool libsoup3 json-c
+
+name=xfce4-weather-plugin
+version=0.12.0
+release=2
+source=(https://archive.xfce.org/src/panel-plugins/$name/${version%.*}/$name-$version.tar.xz)
+
+build(){
+  cd $name-$version
+
+  meson build \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var
+
+  meson compile -C build
+  meson install -C build --destdir $PKG
+}

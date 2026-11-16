@@ -358,8 +358,9 @@ check_existing() {
     local pkg_file="$3"
     local encoded_pkg="$4"
     local mode_label="$5"
+    local allow_any_version="${6:-no}"
 
-    if [[ "${SKIP_EXISTING:-no}" == "yes" ]]; then
+    if [[ "${SKIP_EXISTING:-no}" == "yes" || "$allow_any_version" == "yes" ]]; then
         if [[ -f "/repo/$category/$pkg_file" && -f "/repo/$category/${pkg_file}.sig" ]]; then
             echo "==> [$mode_label:SKIP] $category/$pkg_file already exists locally"
             if ! prt-get isinst "$name" >/dev/null 2>&1; then
@@ -367,15 +368,44 @@ check_existing() {
             fi
             return 0
         fi
-        if [[ "$(curl -o /dev/null --silent -Iw '%{http_code}' "${MIRROR_URL}/${category}/${encoded_pkg}")" == "200" ]]; then
+        if [[ "$(curl -A "irradium-builder/1.0" -o /dev/null --silent -Iw '%{http_code}' "${MIRROR_URL}/${category}/${encoded_pkg}")" == "200" ]]; then
             echo "==> [$mode_label:SKIP] $category/$pkg_file already published on ${MIRROR_URL}"
             if ! prt-get isinst "$name" >/dev/null 2>&1; then
-                curl -fsSL "${MIRROR_URL}/${category}/${encoded_pkg}" -o "/var/cache/pkgmk/packages/$pkg_file"
-                curl -fsSL "${MIRROR_URL}/${category}/${encoded_pkg}.sig" -o "/var/cache/pkgmk/packages/${pkg_file}.sig"
+                curl -A "irradium-builder/1.0" -fsSL "${MIRROR_URL}/${category}/${encoded_pkg}" -o "/var/cache/pkgmk/packages/$pkg_file"
+                curl -A "irradium-builder/1.0" -fsSL "${MIRROR_URL}/${category}/${encoded_pkg}.sig" -o "/var/cache/pkgmk/packages/${pkg_file}.sig"
                 signify -p /etc/pkg-get/pkg-get.pub -V -q -m "/var/cache/pkgmk/packages/$pkg_file" -x "/var/cache/pkgmk/packages/${pkg_file}.sig"
                 pkgadd "/var/cache/pkgmk/packages/$pkg_file"
             fi
             return 0
+        fi
+        if [[ "$allow_any_version" == "yes" ]]; then
+            local local_cand
+            local_cand="$(compgen -G "/repo/$category/${name}#*.pkg.tar.gz" | head -n 1 || true)"
+            if [[ -n "$local_cand" && -f "${local_cand}.sig" ]]; then
+                local cand_base
+                cand_base="$(basename "$local_cand")"
+                echo "==> [$mode_label:DEP] Installing local pre-built dependency $category/$cand_base"
+                if ! prt-get isinst "$name" >/dev/null 2>&1; then
+                    pkgadd "$local_cand"
+                fi
+                return 0
+            fi
+            local remote_encoded
+            remote_encoded="$(curl -A "irradium-builder/1.0" -fsSL "${MIRROR_URL}/${category}/index.html" 2>/dev/null \
+                | grep -oE "href=\"(${name}%23[^\"]+\\.pkg\\.tar\\.gz|${name}#[^\"]+\\.pkg\\.tar\\.gz)\"" \
+                | head -n 1 \
+                | sed -E 's/^href="|"$//g' || true)"
+            if [[ -n "$remote_encoded" ]]; then
+                local remote_fname="${remote_encoded//%23/#}"
+                echo "==> [$mode_label:DEP] Installing mirror pre-built dependency $category/$remote_fname"
+                if ! prt-get isinst "$name" >/dev/null 2>&1; then
+                    curl -A "irradium-builder/1.0" -fsSL "${MIRROR_URL}/${category}/${remote_encoded}" -o "/var/cache/pkgmk/packages/$remote_fname"
+                    curl -A "irradium-builder/1.0" -fsSL "${MIRROR_URL}/${category}/${remote_encoded}.sig" -o "/var/cache/pkgmk/packages/${remote_fname}.sig"
+                    signify -p /etc/pkg-get/pkg-get.pub -V -q -m "/var/cache/pkgmk/packages/$remote_fname" -x "/var/cache/pkgmk/packages/${remote_fname}.sig"
+                    pkgadd "/var/cache/pkgmk/packages/$remote_fname"
+                fi
+                return 0
+            fi
         fi
     fi
     return 1
@@ -383,6 +413,7 @@ check_existing() {
 
 build_single_port() {
     local port_dir="$1"
+    local role="${2:-target}"
     local collection
     collection="$(basename "$(dirname "$port_dir")")"
     local category="${collection##*-}"
@@ -394,7 +425,12 @@ build_single_port() {
     local encoded_pkg="${name}%23${version}-${release}.pkg.tar.gz"
     mkdir -p "/repo/$category"
 
-    if check_existing "$category" "$name" "$pkg_file" "$encoded_pkg" "BUILD"; then
+    local allow_any="no"
+    if [[ "$role" == "dep" && "$collection" != custom-* ]]; then
+        allow_any="yes"
+    fi
+
+    if check_existing "$category" "$name" "$pkg_file" "$encoded_pkg" "BUILD" "$allow_any"; then
         return 0
     fi
 
@@ -688,15 +724,17 @@ for item in "$@"; do
             if [[ "$line" =~ \[\ \]\ ([^[:space:]]+) ]]; then
                 dep_pkg="${BASH_REMATCH[1]}"
                 dep_path="$(prt-get path "$dep_pkg")"
-                build_single_port "$dep_path" </dev/null
                 if [[ "$dep_pkg" == "$pkg_name" ]]; then
+                    build_single_port "$dep_path" "target" </dev/null
                     processed_target="yes"
+                else
+                    build_single_port "$dep_path" "dep" </dev/null
                 fi
             fi
         done <<< "$deps_output"
     fi
     if [[ "$processed_target" == "no" ]]; then
-        build_single_port "$port_path" </dev/null
+        build_single_port "$port_path" "target" </dev/null
     fi
 done
 
