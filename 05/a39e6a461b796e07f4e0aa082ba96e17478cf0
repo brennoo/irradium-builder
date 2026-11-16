@@ -1,0 +1,16 @@
+builder/build-pkg.sh
+  h_c872c6f1ba48bc 410-436,442-629,653-660
+ports/custom/custom-xfce/xfce4-weather-plugin/Pkgfile
+  h_c872c6f1ba48bc 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "05a39e6a461b796e07f4e0aa082ba96e17478cf0",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
