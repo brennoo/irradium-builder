@@ -50,7 +50,7 @@ build() {
     --enable-ucd-snmp-compatibility
 
   make INSTALLDIRS=vendor
-  make install INSTALLDIRS=vendor DESTDIR=$PKG
+  make -j1 install INSTALLDIRS=vendor DESTDIR=$PKG
 
   install -D -m644 $SRC/snmpd.conf \
     $PKG/etc/snmp/snmpd.conf
