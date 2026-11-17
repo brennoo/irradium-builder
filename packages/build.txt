@@ -14,3 +14,4 @@ xfce4-weather-plugin
 glibc
 libssh2
 libsdl
+libsndfile
