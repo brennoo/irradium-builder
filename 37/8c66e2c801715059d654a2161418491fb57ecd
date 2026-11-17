@@ -1,0 +1,16 @@
+.github/workflows/build-packages.yml
+  h_c872c6f1ba48bc 16,57
+.github/workflows/sync-submodules.yml
+  h_c872c6f1ba48bc 20,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "378c66e2c801715059d654a2161418491fb57ecd",
+  "prompts": {},
+  "humans": {
+    "h_c872c6f1ba48bc": {
+      "author": "Brenno Oliveira <brenno.oliveira@deliveryhero.com>"
+    }
+  }
+}
