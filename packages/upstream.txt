@@ -50,7 +50,6 @@ libart_lgpl
 libjpeg-turbo
 libkeybinder3
 libmng
-libsdl
 liburcu
 libxklavier
 lightdm
