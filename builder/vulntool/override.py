@@ -179,11 +179,13 @@ def cmd_fork(args: argparse.Namespace) -> int:
     if not retire_when:
         retire_when = "upstream_has_cve_patch"
 
-    # Check if package is in packages/upstream.txt; if so, move it to packages/build.txt
+    # Check if package is in packages/upstream.txt; always ensure it is in packages/build.txt
     was_prebuilt = _remove_pkg_from_file(ports.UPSTREAM_TXT, pkg)
+    _add_pkg_to_file(ports.BUILD_TXT, pkg)
     if was_prebuilt:
-        _add_pkg_to_file(ports.BUILD_TXT, pkg)
         print(f"==> Moved '{pkg}' from packages/upstream.txt to packages/build.txt (was_prebuilt=yes)")
+    else:
+        print(f"==> Added '{pkg}' to packages/build.txt (was_prebuilt=no)")
 
     today = datetime.date.today().isoformat()
     meta = OverrideMeta(
@@ -534,10 +536,12 @@ def retire_override(pkg: str) -> tuple[bool, str]:
     meta = OverrideMeta.load(port_dir / ".override")
     shutil.rmtree(port_dir)
     msg = f"Removed override directory {port_dir.relative_to(ports.ROOT_DIR)}"
+    _remove_pkg_from_file(ports.BUILD_TXT, pkg)
     if meta.was_prebuilt:
-        _remove_pkg_from_file(ports.BUILD_TXT, pkg)
         _add_pkg_to_file(ports.UPSTREAM_TXT, pkg)
         msg += f" and moved '{pkg}' back from packages/build.txt to packages/upstream.txt"
+    else:
+        msg += f" and removed '{pkg}' from packages/build.txt"
     return True, msg
 
 

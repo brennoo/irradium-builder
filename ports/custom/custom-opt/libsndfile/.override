@@ -1,0 +1,8 @@
+origin=crux-opt/libsndfile
+origin_commit=1c1bcadc136af89c37f934a33a29a8e5bb904e14
+origin_version=1.2.2-1
+reason=CVE-2022-33065,CVE-2024-50612,CVE-2024-50613,CVE-2025-52194,CVE-2025-56226,CVE-2026-37555
+cves=CVE-2022-33065,CVE-2024-50612,CVE-2024-50613,CVE-2025-52194,CVE-2025-56226,CVE-2026-37555
+retire_when=upstream_version>=1.2.3|upstream_has_cve_patch
+was_prebuilt=no
+created=2026-11-17
