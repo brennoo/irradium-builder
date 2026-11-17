@@ -6,7 +6,6 @@
 # Additional CRUX ports mirrored from upstream pre-built binaries
 bindutils
 bind
-libssh2
 
 # irradium-core (27)
 bash
