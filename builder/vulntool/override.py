@@ -157,9 +157,8 @@ def cmd_fork(args: argparse.Namespace) -> int:
     dest_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(origin_dir, dest_dir)
 
-    # Drop inherited .signature (signed with upstream key; invalid once edited)
-    sig_file = dest_dir / ".signature"
-    if sig_file.exists():
+    # Drop inherited .signature* (signed with upstream key; invalid once edited)
+    for sig_file in dest_dir.glob(".signature*"):
         sig_file.unlink()
 
     ver, rel = ports.source_pkgfile(origin_dir)
@@ -418,10 +417,10 @@ def cmd_refresh(args: argparse.Namespace) -> int:
             print(f"ERROR: No custom port or override found for '{pkg}'", file=sys.stderr)
             return 1
 
-    sig_file = port_dir / ".signature"
-    if sig_file.exists():
+    sig_files = sorted(port_dir.glob(".signature*"))
+    if sig_files:
         print(
-            f"ERROR: {sig_file} is still present in override port {pkg}; overrides must use .md5sum, not .signature",
+            f"ERROR: {sig_files[0]} is still present in override port {pkg}; overrides must not retain upstream .signature* files",
             file=sys.stderr,
         )
         return 1
@@ -484,8 +483,9 @@ pkgmk -d -uf
             print(f"ERROR: Builder container failed during refresh of {pkg}", file=sys.stderr)
             return run_res.returncode
 
-    if sig_file.exists():
-        print(f"ERROR: {sig_file} exists after refresh", file=sys.stderr)
+    sig_files = sorted(port_dir.glob(".signature*"))
+    if sig_files:
+        print(f"ERROR: {sig_files[0]} exists after refresh", file=sys.stderr)
         return 1
 
     # Re-scan just this package to confirm target CVEs are gone
