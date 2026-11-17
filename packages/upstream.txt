@@ -131,7 +131,6 @@ dhcp
 directx-shader-compiler
 elogind
 etcd
-firefox
 freerdp
 gcc-fortran
 geany
