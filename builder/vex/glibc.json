@@ -2,6 +2,15 @@
   {
     "pkg": "glibc",
     "version": "*",
+    "cve": "CVE-2010-4756",
+    "status": "not_affected",
+    "justification": "inline_mitigations_already_exist",
+    "note": "Historical 2010 glob() resource consumption report (RHBZ #681681) with unbounded NVD CPE; glibc implements GLOB_LIMIT (GLOB_ALLLIMIT) inline caps on readdir/stat/malloc in posix/glob.c",
+    "timestamp": "2026-11-17T20:29:00Z"
+  },
+  {
+    "pkg": "glibc",
+    "version": "*",
     "cve": "CVE-2019-1010022",
     "status": "not_affected",
     "justification": "inline_mitigations_already_exist",
@@ -20,19 +29,19 @@
   {
     "pkg": "glibc",
     "version": "*",
-    "cve": "CVE-2026-84243",
+    "cve": "CVE-2019-1010024",
     "status": "not_affected",
-    "justification": "vulnerable_code_not_in_execute_path",
-    "note": "Applies only to non-setuid (!AT_SECURE) processes where the caller already controls the LANGUAGE environment variable",
-    "timestamp": "2026-11-15T22:10:00Z"
+    "justification": "inline_mitigations_already_exist",
+    "note": "Disputed by upstream GNU C Library security team (BZ #22852) as a non-security issue; reuse of cached pthread stacks within the same process does not cross a privilege boundary",
+    "timestamp": "2026-11-17T20:29:00Z"
   },
   {
     "pkg": "glibc",
     "version": "*",
-    "cve": "CVE-2026-0915",
+    "cve": "CVE-2019-1010025",
     "status": "not_affected",
-    "justification": "vulnerable_code_not_in_execute_path",
-    "note": "Requires /etc/nsswitch.conf to specify the dns backend for networks; irradium-core/glibc ships nsswitch.conf with 'networks: files' only",
-    "timestamp": "2026-11-15T22:40:00Z"
+    "justification": "inline_mitigations_already_exist",
+    "note": "Disputed by upstream GNU C Library security team (BZ #22853) as a non-security issue; relative mmap offset of pthread stacks/heaps within a single process does not cross a security boundary",
+    "timestamp": "2026-11-17T20:29:00Z"
   }
 ]

@@ -11,3 +11,4 @@ haproxy
 net-snmp
 binutils
 xfce4-weather-plugin
+glibc

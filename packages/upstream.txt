@@ -20,7 +20,6 @@ filesystem
 gcc
 gdbm
 gettext
-glibc
 gzip
 iproute2
 kbd
