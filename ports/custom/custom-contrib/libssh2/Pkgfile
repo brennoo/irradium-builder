@@ -1,0 +1,28 @@
+# Description: A library implementing the SSH2 protocol as defined by Internet Drafts
+# URL: https://www.libssh2.org/
+# Maintainer: Tim Biermann, tbier at posteo dot de
+
+name=libssh2
+version=1.11.1
+release=2
+source=(https://www.libssh2.org/download/$name-$version.tar.gz
+  CVE-2025-15661.patch
+  CVE-2026-55199.patch
+  CVE-2026-55200.patch
+  CVE-2026-58051.patch
+  CVE-2026-66032.patch
+  CVE-2026-66033.patch
+  CVE-2026-66034.patch
+  CVE-2026-66035.patch
+  CVE-2026-7598.patch)
+
+build() {
+  cd $name-$version
+
+  for p in $SRC/CVE-*.patch; do patch -p1 -i "$p"; done
+
+  ./configure --prefix=/usr \
+    --disable-static
+  make
+  make DESTDIR=$PKG install
+}
