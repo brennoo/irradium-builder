@@ -107,7 +107,7 @@ CONTRIB_WANTED = {
 }
 
 OPT_WANTED = {
-    "pkg-get"
+    "pkg-get", "texinfo"
 }
 
 
