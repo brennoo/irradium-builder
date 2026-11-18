@@ -9,6 +9,7 @@ notqmail
 lua53
 haproxy
 net-snmp
+firefox
 binutils
 xfce4-weather-plugin
 glibc
