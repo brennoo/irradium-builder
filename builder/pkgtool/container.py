@@ -607,6 +607,26 @@ class ContainerBuilder:
         self.skip_existing = skip_existing
         self.mirror_url = mirror_url.rstrip("/")
         self.ssl_ctx = ssl_ctx
+        self.invalid_remote_pkgs: set[str] = set()
+
+    def check_target_already_built(self, port_dir: pathlib.Path) -> bool:
+        """Check if a target port is already built and validly signed locally or on the mirror."""
+        if not self.skip_existing:
+            return False
+        collection = port_dir.parent.name
+        category = collection.split("-")[-1]
+        name, version, release = _source_pkgfile_meta(port_dir)
+        pkg_file = f"{name}#{version}-{release}.pkg.tar.gz"
+        encoded_pkg = f"{name}%23{version}-{release}.pkg.tar.gz"
+        return self.check_existing(
+            category=category,
+            name=name,
+            pkg_file=pkg_file,
+            encoded_pkg=encoded_pkg,
+            mode_label="BUILD",
+            allow_any_version=False,
+            install_if_skipped=False,
+        )
 
     def check_existing(
         self,
@@ -616,6 +636,7 @@ class ContainerBuilder:
         encoded_pkg: str,
         mode_label: str,
         allow_any_version: bool = False,
+        install_if_skipped: bool = True,
     ) -> bool:
         if not self.skip_existing and not allow_any_version:
             return False
@@ -623,23 +644,50 @@ class ContainerBuilder:
         local_pkg = pathlib.Path(f"/repo/{category}/{pkg_file}")
         local_sig = pathlib.Path(f"/repo/{category}/{pkg_file}.sig")
         if local_pkg.is_file() and local_sig.is_file():
-            print(f"==> [{mode_label}:SKIP] {category}/{pkg_file} already exists locally", flush=True)
-            if not _prt_get_isinst(name):
-                subprocess.run(["pkgadd", str(local_pkg)], check=True)
-            return True
+            verify_local = subprocess.run(
+                ["signify", "-p", "/etc/pkg-get/pkg-get.pub", "-V", "-q", "-m", str(local_pkg), "-x", str(local_sig)],
+                check=False,
+            )
+            if verify_local.returncode == 0:
+                print(f"==> [{mode_label}:SKIP] {category}/{pkg_file} already exists locally", flush=True)
+                if install_if_skipped and not _prt_get_isinst(name):
+                    subprocess.run(["pkgadd", str(local_pkg)], check=True)
+                return True
+            print(
+                f"==> [{mode_label}:WARN] Local {category}/{pkg_file} failed signature verification; rebuilding...",
+                flush=True,
+            )
+            local_pkg.unlink(missing_ok=True)
+            local_sig.unlink(missing_ok=True)
 
+        pkg_key = f"{category}/{pkg_file}"
         remote_pkg_url = f"{self.mirror_url}/{category}/{encoded_pkg}"
-        if _http_head_ok(remote_pkg_url, self.ssl_ctx):
-            print(f"==> [{mode_label}:SKIP] {category}/{pkg_file} already published on {self.mirror_url}", flush=True)
-            if not _prt_get_isinst(name):
-                cache_pkg = pathlib.Path(f"/var/cache/pkgmk/packages/{pkg_file}")
-                cache_sig = pathlib.Path(f"/var/cache/pkgmk/packages/{pkg_file}.sig")
-                _download_file(remote_pkg_url, cache_pkg, self.ssl_ctx)
-                _download_file(f"{remote_pkg_url}.sig", cache_sig, self.ssl_ctx, timeout=30.0)
+        if (
+            pkg_key not in self.invalid_remote_pkgs
+            and _http_head_ok(remote_pkg_url, self.ssl_ctx)
+            and _http_head_ok(f"{remote_pkg_url}.sig", self.ssl_ctx)
+        ):
+            cache_pkg = pathlib.Path(f"/var/cache/pkgmk/packages/{pkg_file}")
+            cache_sig = pathlib.Path(f"/var/cache/pkgmk/packages/{pkg_file}.sig")
+            try:
+                if not (cache_pkg.is_file() and cache_sig.is_file()):
+                    _download_file(remote_pkg_url, cache_pkg, self.ssl_ctx)
+                    _download_file(f"{remote_pkg_url}.sig", cache_sig, self.ssl_ctx, timeout=30.0)
                 subprocess.run(
                     ["signify", "-p", "/etc/pkg-get/pkg-get.pub", "-V", "-q", "-m", str(cache_pkg), "-x", str(cache_sig)],
                     check=True,
                 )
+            except Exception:
+                print(
+                    f"==> [{mode_label}:WARN] {category}/{pkg_file} on {self.mirror_url} failed signature verification; rebuilding...",
+                    flush=True,
+                )
+                cache_pkg.unlink(missing_ok=True)
+                cache_sig.unlink(missing_ok=True)
+                self.invalid_remote_pkgs.add(pkg_key)
+                return False
+            print(f"==> [{mode_label}:SKIP] {category}/{pkg_file} already published on {self.mirror_url}", flush=True)
+            if install_if_skipped and not _prt_get_isinst(name):
                 subprocess.run(["pkgadd", str(cache_pkg)], check=True)
             return True
 
@@ -653,10 +701,19 @@ class ContainerBuilder:
                 ]
                 if local_cands:
                     best_local = _pick_newest_pkg_filename(local_cands)
-                    print(f"==> [{mode_label}:DEP] Installing local pre-built dependency {category}/{best_local}", flush=True)
-                    if not _prt_get_isinst(name):
-                        subprocess.run(["pkgadd", str(repo_cat / best_local)], check=True)
-                    return True
+                    best_pkg = repo_cat / best_local
+                    best_sig = repo_cat / f"{best_local}.sig"
+                    if (
+                        subprocess.run(
+                            ["signify", "-p", "/etc/pkg-get/pkg-get.pub", "-V", "-q", "-m", str(best_pkg), "-x", str(best_sig)],
+                            check=False,
+                        ).returncode
+                        == 0
+                    ):
+                        print(f"==> [{mode_label}:DEP] Installing local pre-built dependency {category}/{best_local}", flush=True)
+                        if not _prt_get_isinst(name):
+                            subprocess.run(["pkgadd", str(best_pkg)], check=True)
+                        return True
 
             remote_encoded = _find_matching_pkg_in_html(
                 f"{self.mirror_url}/{category}/index.html",
@@ -665,18 +722,29 @@ class ContainerBuilder:
             )
             if remote_encoded:
                 remote_fname = urllib.parse.unquote(remote_encoded)
-                print(f"==> [{mode_label}:DEP] Installing mirror pre-built dependency {category}/{remote_fname}", flush=True)
                 if not _prt_get_isinst(name):
                     cache_pkg = pathlib.Path(f"/var/cache/pkgmk/packages/{remote_fname}")
                     cache_sig = pathlib.Path(f"/var/cache/pkgmk/packages/{remote_fname}.sig")
-                    _download_file(f"{self.mirror_url}/{category}/{remote_encoded}", cache_pkg, self.ssl_ctx)
-                    _download_file(f"{self.mirror_url}/{category}/{remote_encoded}.sig", cache_sig, self.ssl_ctx, timeout=30.0)
-                    subprocess.run(
-                        ["signify", "-p", "/etc/pkg-get/pkg-get.pub", "-V", "-q", "-m", str(cache_pkg), "-x", str(cache_sig)],
-                        check=True,
-                    )
-                    subprocess.run(["pkgadd", str(cache_pkg)], check=True)
-                return True
+                    try:
+                        _download_file(f"{self.mirror_url}/{category}/{remote_encoded}", cache_pkg, self.ssl_ctx)
+                        _download_file(f"{self.mirror_url}/{category}/{remote_encoded}.sig", cache_sig, self.ssl_ctx, timeout=30.0)
+                        subprocess.run(
+                            ["signify", "-p", "/etc/pkg-get/pkg-get.pub", "-V", "-q", "-m", str(cache_pkg), "-x", str(cache_sig)],
+                            check=True,
+                        )
+                        print(f"==> [{mode_label}:DEP] Installing mirror pre-built dependency {category}/{remote_fname}", flush=True)
+                        subprocess.run(["pkgadd", str(cache_pkg)], check=True)
+                        return True
+                    except Exception:
+                        print(
+                            f"==> [{mode_label}:WARN] Mirror dependency {category}/{remote_fname} failed signature verification; falling back...",
+                            flush=True,
+                        )
+                        cache_pkg.unlink(missing_ok=True)
+                        cache_sig.unlink(missing_ok=True)
+                else:
+                    print(f"==> [{mode_label}:DEP] Installing mirror pre-built dependency {category}/{remote_fname}", flush=True)
+                    return True
 
             cat_order = [category] + [c for c in CATEGORIES if c != category]
             for up_base in _upstream_mirrors(self.arch, self.distr):
@@ -687,12 +755,21 @@ class ContainerBuilder:
                         print(f"==> [{mode_label}:DEP] Fetching upstream pre-built dependency {up_cat}/{up_fname}", flush=True)
                         cache_pkg = pathlib.Path(f"/var/cache/pkgmk/packages/{up_fname}")
                         cache_sig = pathlib.Path(f"/var/cache/pkgmk/packages/{up_fname}.upstream.sig")
-                        _download_file(f"{up_base}/{up_cat}/{up_encoded}", cache_pkg, self.ssl_ctx)
-                        _download_file(f"{up_base}/{up_cat}/{up_encoded}.sig", cache_sig, self.ssl_ctx, timeout=30.0)
-                        subprocess.run(
-                            ["signify", "-p", str(UPSTREAM_PUB_PATH), "-V", "-q", "-m", str(cache_pkg), "-x", str(cache_sig)],
-                            check=True,
-                        )
+                        try:
+                            _download_file(f"{up_base}/{up_cat}/{up_encoded}", cache_pkg, self.ssl_ctx)
+                            _download_file(f"{up_base}/{up_cat}/{up_encoded}.sig", cache_sig, self.ssl_ctx, timeout=30.0)
+                            subprocess.run(
+                                ["signify", "-p", str(UPSTREAM_PUB_PATH), "-V", "-q", "-m", str(cache_pkg), "-x", str(cache_sig)],
+                                check=True,
+                            )
+                        except Exception:
+                            print(
+                                f"==> [{mode_label}:WARN] Failed fetching/verifying {up_cat}/{up_fname} from {up_base}; trying next...",
+                                flush=True,
+                            )
+                            cache_pkg.unlink(missing_ok=True)
+                            cache_sig.unlink(missing_ok=True)
+                            continue
                         repo_cat.mkdir(parents=True, exist_ok=True)
                         dest_pkg = repo_cat / up_fname
                         dest_sig = repo_cat / f"{up_fname}.sig"
@@ -743,7 +820,12 @@ class ContainerBuilder:
             if not added_any:
                 break
 
-    def build_single_port(self, port_dir: pathlib.Path, role: str = "target") -> None:
+    def build_single_port(
+        self,
+        port_dir: pathlib.Path,
+        role: str = "target",
+        skip_check: bool = False,
+    ) -> None:
         collection = port_dir.parent.name
         category = collection.split("-")[-1]
 
@@ -753,9 +835,18 @@ class ContainerBuilder:
         repo_cat_dir = pathlib.Path(f"/repo/{category}")
         repo_cat_dir.mkdir(parents=True, exist_ok=True)
 
-        allow_any = role == "dep" and not collection.startswith("custom-")
-        if self.check_existing(category, name, pkg_file, encoded_pkg, "BUILD", allow_any_version=allow_any):
-            return
+        if not skip_check:
+            allow_any = role == "dep" and not collection.startswith("custom-")
+            if self.check_existing(
+                category,
+                name,
+                pkg_file,
+                encoded_pkg,
+                "BUILD",
+                allow_any_version=allow_any,
+                install_if_skipped=(role == "dep"),
+            ):
+                return
 
         if role == "target":
             self.ensure_implicit_deps()
@@ -875,6 +966,9 @@ def run_in_container(raw_targets: list[str]) -> int:
                 return 1
             port_path = resolved
 
+        if builder.check_target_already_built(port_path):
+            continue
+
         dep_pkgs = _prt_get_depends_uninstalled(pkg_name)
         processed_target = False
         for dep_pkg in dep_pkgs:
@@ -882,12 +976,12 @@ def run_in_container(raw_targets: list[str]) -> int:
             if dep_path is None:
                 continue
             if dep_pkg == pkg_name:
-                builder.build_single_port(dep_path, role="target")
+                builder.build_single_port(dep_path, role="target", skip_check=True)
                 processed_target = True
             else:
                 builder.build_single_port(dep_path, role="dep")
 
         if not processed_target:
-            builder.build_single_port(port_path, role="target")
+            builder.build_single_port(port_path, role="target", skip_check=True)
 
     return 0
