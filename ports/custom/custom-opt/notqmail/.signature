@@ -1,0 +1,8 @@
+untrusted comment: verify with /etc/ports/custom-opt.pub
+RWSKHujIjOYbDj5rW2VhCKuSljfYRZrOlOnH3BGe3zGjh5gQGxusnRPXldTiO5htoevZTWA6cVHwu9swRzzB3JCFJnxwUt7p+wM=
+SHA256 (Pkgfile) = 605cc7eced4472c01308da0bfbf381c3d09993870650e9507e401e94ebe2e1dd
+SHA256 (.footprint) = aeacdcdf0757468bd3daea327460f5e1ab99eafc08d972ecf1044fc3d886ceac
+SHA256 (notqmail-1.09.tar.xz) = e921891e7c2d84e30b6b52c02c251f61eb4a6255a922620a99a337f46fa32c52
+SHA256 (qmail.rc) = a67137cb5cc9cf23831543b0b15b228e36e23aa8eaa8ea17f943d5fc66ff81ed
+SHA256 (pre-install) = a0db43d7e6c871cd7dd9d4bf1d2bcd8f14032be888bcee56cc7a0ba59680d500
+SHA256 (post-install) = ede13904b58fdb9f64f0132e76a051b7b82495b1878bb39cd289ea42bcb8375f
