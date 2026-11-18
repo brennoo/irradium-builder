@@ -141,7 +141,7 @@ jobs:
           fi
 
       - name: Publish badge JSON to badges branch
-        if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        if: always() && github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           if [[ ! -f /tmp/vuln-badge-critical.json || ! -f /tmp/vuln-badge-high.json ]]; then

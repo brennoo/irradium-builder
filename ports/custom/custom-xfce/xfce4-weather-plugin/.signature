@@ -1,0 +1,5 @@
+untrusted comment: verify with /etc/ports/custom-xfce.pub
+RWSKHujIjOYbDvPaZkhgtEIn/x2rz2Hil2ymVn3iIOwqoEXkO/FWdUtWEvRfOd3KC9fwOLQCZISJ/tTKr0/xfeWmfz4Deyb/Vgk=
+SHA256 (Pkgfile) = e90376361985fbe33d16d6654f4b337d657c699a79beb99f7edcd8a4be966dbe
+SHA256 (.footprint) = 73734ca4d1550082f8fb0cda66ccbb625764e592534142ead1b9d548a01ea8c4
+SHA256 (xfce4-weather-plugin-0.12.0.tar.xz) = 5dd90b032c06ef4b64b818023154ef9463a2c694a0290e57f3412296c7545ff6

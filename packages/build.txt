@@ -16,3 +16,4 @@ glibc
 libssh2
 libsdl
 libsndfile
+ffmpeg

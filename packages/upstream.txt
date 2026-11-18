@@ -40,7 +40,6 @@ compiler-rt
 dbus
 efibootmgr
 efivar
-ffmpeg
 gobject-introspection
 grub2
 grub2-efi

@@ -14,6 +14,8 @@ import subprocess
 import sys
 import urllib.request
 
+from pkgtool import signify
+
 from . import ports, scan, versions, vex
 
 PATCH_LOOP_SNIPPET = 'for p in $SRC/CVE-*.patch; do patch -p1 -i "$p"; done'
@@ -64,6 +66,31 @@ class OverrideMeta:
             f"created={self.created}",
         ]
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _sync_custom_port_repo_and_sig(port_dir: pathlib.Path) -> None:
+    """Sign port .signature* (when pkg-get.sec and source hashes are available) and update collection REPO."""
+    sec_path = ports.ROOT_DIR / "keys" / "pkg-get.sec"
+    cache_root = ports.ROOT_DIR / "cache"
+    cache_source_dirs = [
+        d / "sources"
+        for d in sorted(cache_root.iterdir())
+        if d.is_dir() and (d / "sources").is_dir()
+    ] if cache_root.is_dir() else []
+
+    cat = port_dir.parent.name.split("-")[-1]
+    upstream_cands = [
+        ports.PORTS_ROOT / "irradium" / f"irradium-{cat}" / port_dir.name,
+        ports.PORTS_ROOT / f"crux-{cat}" / port_dir.name,
+    ]
+    if sec_path.is_file():
+        signify.sign_port_signatures(
+            port_dir,
+            sec_path=sec_path,
+            cache_source_dirs=cache_source_dirs,
+            upstream_port_dirs=upstream_cands,
+        )
+    signify.update_collection_repo(port_dir.parent, ensure_ignore_file=True)
 
 
 def _find_custom_override_dir(pkg: str, ports_root: pathlib.Path | None = None) -> pathlib.Path | None:
@@ -199,6 +226,7 @@ def cmd_fork(args: argparse.Namespace) -> int:
         created=today,
     )
     meta.save(dest_dir / ".override")
+    _sync_custom_port_repo_and_sig(dest_dir)
 
     print(
         f"==> Forked {origin_collection}/{pkg} ({ver}-{rel} @ {origin_commit[:8]}) -> "
@@ -338,6 +366,7 @@ def cmd_patch(args: argparse.Namespace) -> int:
             else "upstream_has_cve_patch"
         )
     meta.save(meta_path)
+    _sync_custom_port_repo_and_sig(port_dir)
 
     if not ok:
         print(
@@ -351,7 +380,7 @@ def cmd_patch(args: argparse.Namespace) -> int:
 
     print(
         f"==> Patched {pkg} with {patch_filename} (release={new_rel}); "
-        f"run `python3 -m vulntool override refresh {pkg}` to rebuild checksums and footprint."
+        f"run `python3 -m vulntool override refresh {pkg}` to rebuild footprint and signature."
     )
     return 0
 
@@ -398,16 +427,17 @@ def cmd_bump(args: argparse.Namespace) -> int:
     if not meta.reason:
         meta.reason = ",".join(meta.cves) if meta.cves else f"bump-{new_version}"
     meta.save(meta_path)
+    _sync_custom_port_repo_and_sig(port_dir)
 
     print(
         f"==> Bumped {pkg} to version={new_version}, release=1 (retire_when={meta.retire_when}); "
-        f"run `python3 -m vulntool override refresh {pkg}` to rebuild checksums and footprint."
+        f"run `python3 -m vulntool override refresh {pkg}` to rebuild footprint and signature."
     )
     return 0
 
 
 def cmd_refresh(args: argparse.Namespace) -> int:
-    """Refresh .md5sum and .footprint inside the builder container and verify CVEs are fixed."""
+    """Refresh .footprint, .signature*, and collection REPO and verify CVEs are fixed."""
     pkg = args.pkg.strip()
     port_dir = _find_custom_override_dir(pkg)
     if port_dir is None:
@@ -419,10 +449,10 @@ def cmd_refresh(args: argparse.Namespace) -> int:
             print(f"ERROR: No custom port or override found for '{pkg}'", file=sys.stderr)
             return 1
 
-    sig_files = sorted(port_dir.glob(".signature*"))
-    if sig_files:
+    upstream_sigs = [s for s in sorted(port_dir.glob(".signature*")) if signify.is_upstream_signature_file(s)]
+    if upstream_sigs:
         print(
-            f"ERROR: {sig_files[0]} is still present in override port {pkg}; overrides must not retain upstream .signature* files",
+            f"ERROR: {upstream_sigs[0]} in override port {pkg} is signed for an upstream collection; overrides must not retain upstream .signature* files",
             file=sys.stderr,
         )
         return 1
@@ -456,8 +486,6 @@ set -euo pipefail
 mkdir -p /var/cache/pkgmk/sources /var/cache/pkgmk/packages /tmp/pkgmk-work
 sed -i 's|PKGMK_WORK_DIR=.*|PKGMK_WORK_DIR="/tmp/pkgmk-work/$name"|' /etc/pkgmk.conf
 cd "/mnt/ports/custom/{collection}/{pkg}"
-echo "==> [REFRESH] Running pkgmk -um for {collection}/{pkg}..."
-pkgmk -um
 echo "==> [REFRESH] Running pkgmk -d -uf for {collection}/{pkg}..."
 pkgmk -d -uf
 """
@@ -485,9 +513,11 @@ pkgmk -d -uf
             print(f"ERROR: Builder container failed during refresh of {pkg}", file=sys.stderr)
             return run_res.returncode
 
-    sig_files = sorted(port_dir.glob(".signature*"))
-    if sig_files:
-        print(f"ERROR: {sig_files[0]} exists after refresh", file=sys.stderr)
+    _sync_custom_port_repo_and_sig(port_dir)
+
+    upstream_sigs = [s for s in sorted(port_dir.glob(".signature*")) if signify.is_upstream_signature_file(s)]
+    if upstream_sigs:
+        print(f"ERROR: Upstream {upstream_sigs[0]} exists after refresh", file=sys.stderr)
         return 1
 
     # Re-scan just this package to confirm target CVEs are gone
@@ -534,7 +564,9 @@ def retire_override(pkg: str) -> tuple[bool, str]:
         return False, f"No override found for '{pkg}'"
 
     meta = OverrideMeta.load(port_dir / ".override")
+    col_dir = port_dir.parent
     shutil.rmtree(port_dir)
+    signify.update_collection_repo(col_dir, ensure_ignore_file=True)
     msg = f"Removed override directory {port_dir.relative_to(ports.ROOT_DIR)}"
     _remove_pkg_from_file(ports.BUILD_TXT, pkg)
     if meta.was_prebuilt:
