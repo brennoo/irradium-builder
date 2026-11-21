@@ -108,6 +108,14 @@ EOF
   # vendored third-party project needs another header to define int64_t
   sed "4a #include <cstdint>" -i third_party/parakeet.cpp/src/backend.hpp
 
+  # Disable Rust fat LTO (-Clto / -Cembed-bitcode=yes) and single codegen-unit
+  # to avoid OOM (SIGKILL) when compiling gkrust
+  sed -e '/set_config("RUST_LTO_ELIGIBLE"/d' \
+      -e 's/if lto_eligible:/if False:/' \
+      -e '/set_config("MOZ_RUSTFLAGS_CODEGEN"/d' \
+      -e 's/, when=developer_options//' \
+      -i build/moz.configure/rust.configure
+
   # audio
   PKGMK_FFAUDIO="alsa"
   [ -e /usr/lib/pkgconfig/libpulse.pc ] && PKGMK_FFAUDIO+=",pulseaudio"

@@ -10,7 +10,14 @@ Pre-built binary packages for **[Irradium](https://irradium.org/) 3.8** - multi-
 
 ## Setup on Your Device
 
-Run the following commands as `root` on your Irradium system:
+Run the bootstrap script as `root` on your **Irradium 3.8** system to install the signing key, configure the binary mirror, and enable/sync the `custom-*` port collections:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/brennoo/irradium-builder/3.8/setup.sh | sh
+```
+
+<details>
+<summary>Manual step-by-step setup</summary>
 
 ### 1. Install the Public Signing Key
 
@@ -23,24 +30,51 @@ curl -fsSL https://raw.githubusercontent.com/brennoo/irradium-builder/3.8/keys/p
 
 ### 2. Configure the Package Mirror
 
-Set the binary mirror in `/etc/pkg-get/mirrors` (`pkg-get` automatically replaces `ARCH` with your system's `uname -m` architecture):
+Set the binary mirror in `/etc/pkg-get/mirrors` (`pkg-get` automatically replaces `ARCH` with your system's `uname -m` architecture and filters by your `irradium` release version):
 
 ```bash
 sed -i 's|^https://|# https://|' /etc/pkg-get/mirrors
 echo "https://irradium.blackhole.com.br/irradium/packages/ARCH/3.8" >> /etc/pkg-get/mirrors
 ```
 
-### 3. Install Packages
+### 3. Enable Custom Port Collections (`custom-*`)
 
-Install binary packages and their dependencies using `pkg-get`:
+Register and sync the `custom-*` port collections so `prt-get` and `pkg-get` can discover custom ports (like `notqmail`) and security-patched overrides:
 
 ```bash
-# Install a package and its missing dependencies
-pkg-get -di <package>
+for col in custom-core custom-opt custom-xfce custom-contrib; do
+  cp /etc/pkg-get/pkg-get.pub /etc/ports/${col}.pub
+  cat > /etc/ports/${col}.httpup << EOF
+ROOT_DIR=/usr/ports/${col}
+URL=https://raw.githubusercontent.com/brennoo/irradium-builder/3.8/ports/custom/${col}/
+EOF
+done
 
-# Install a single package
+sed -i '1i prtdir /usr/ports/custom-core\nprtdir /usr/ports/custom-opt\nprtdir /usr/ports/custom-xorg\nprtdir /usr/ports/custom-xfce\nprtdir /usr/ports/custom-contrib' /etc/prt-get.conf
+ports -u custom-core custom-opt custom-xfce custom-contrib
+```
+
+</details>
+
+### Install & Update Packages
+
+`pkg-get` resolves available package versions and dependencies from your local `/usr/ports` tree via `prt-get`:
+
+```bash
+# Refresh the list of available packages and versions
+ports -u
+
+# Upgrade installed packages to newer versions in /usr/ports
+pkg-get -u
+
+# Install a package and its missing dependencies (e.g. notqmail)
+pkg-get -di notqmail
+
+# Install a single package without dependencies
 pkg-get -i <package>
 ```
+
+> **Note:** On a default Irradium installation, `contrib`, `irradium-contrib`, and `irradium-xfce` are disabled by default (`.inactive` in `/etc/ports/` and commented out in `/etc/prt-get.conf`). To install packages or dependencies from those collections, remove the `.inactive` suffix in `/etc/ports/`, uncomment their `prtdir` lines in `/etc/prt-get.conf`, and run `ports -u`.
 
 ---
 
@@ -48,39 +82,10 @@ pkg-get -i <package>
 
 Packages available on this mirror are tracked in two lists:
 
-* [`packages/build.txt`](packages/build.txt): Packages compiled from source by this repository.
+* [`packages/build.txt`](packages/build.txt): Packages compiled from source by this repository (including custom ports and CVE-patched overrides under [`ports/custom/`](ports/custom)).
 * [`packages/upstream.txt`](packages/upstream.txt): Pre-built upstream Irradium packages verified and mirrored here so devices only need a single mirror and signing key.
 
 Need another package from the Irradium or CRUX port trees added to the binary mirror? Open a pull request adding it to [`packages/build.txt`](packages/build.txt) (or [`packages/upstream.txt`](packages/upstream.txt)) or open an issue.
-
----
-
-## Custom Packages (`custom-opt`)
-
-This repository also provides custom ports (such as `notqmail`) under [`ports/custom/custom-opt/`](ports/custom/custom-opt) that are not part of upstream Irradium or CRUX.
-
-To enable custom ports on your device so `pkg-get` and `prt-get` can discover them:
-
-```bash
-# 1. Trust the public key for custom-opt ports
-cp /etc/pkg-get/pkg-get.pub /etc/ports/custom-opt.pub
-
-# 2. Configure httpup to sync custom-opt from GitHub
-cat > /etc/ports/custom-opt.httpup << 'EOF'
-ROOT_DIR=/usr/ports/custom-opt
-URL=https://raw.githubusercontent.com/brennoo/irradium-builder/3.8/ports/custom/custom-opt/
-EOF
-
-# 3. Register /usr/ports/custom-opt in /etc/prt-get.conf and sync
-sed -i '1i prtdir /usr/ports/custom-opt' /etc/prt-get.conf
-ports -u custom-opt
-```
-
-Once synced, install custom binary packages just like any other package:
-
-```bash
-pkg-get -di notqmail
-```
 
 ---
 

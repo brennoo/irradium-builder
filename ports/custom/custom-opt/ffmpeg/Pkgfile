@@ -6,7 +6,7 @@
 
 name=ffmpeg
 version=9.0.2
-release=2
+release=3
 source=(https://ffmpeg.org/releases/$name-$version.tar.bz2
   add-av_stream_get_first_dts-for-chromium.patch
   add-in-cpu-__NR_riscv_hwprobe.patch
@@ -21,6 +21,31 @@ source=(https://ffmpeg.org/releases/$name-$version.tar.bz2
   CVE-2026-120245.patch
   CVE-2026-120246.patch
   CVE-2026-120247.patch
+  CVE-2026-125181.patch
+  CVE-2026-125196.patch
+  CVE-2026-125202.patch
+  CVE-2026-125204.patch
+  CVE-2026-125208.patch
+  CVE-2026-125210.patch
+  CVE-2026-125211.patch
+  CVE-2026-125213.patch
+  CVE-2026-125214.patch
+  CVE-2026-125219.patch
+  CVE-2026-125222.patch
+  CVE-2026-125227.patch
+  CVE-2026-125229.patch
+  CVE-2026-125233.patch
+  CVE-2026-125239.patch
+  CVE-2026-125241.patch
+  CVE-2026-125248.patch
+  CVE-2026-125249.patch
+  CVE-2026-125250.patch
+  CVE-2026-125251.patch
+  CVE-2026-125256.patch
+  CVE-2026-125257.patch
+  CVE-2026-125259.patch
+  CVE-2026-125262.patch
+  CVE-2026-125269.patch
   ffmpeg-x264-10bit.sh)
 
 build() {
