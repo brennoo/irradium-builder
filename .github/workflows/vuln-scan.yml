@@ -41,7 +41,7 @@ jobs:
     name: Vulnerability Scan & Override Status
     runs-on: ubuntu-latest
     env:
-      DISTR_VERSION: ${{ github.ref_name }}
+      DISTR_VERSION: ${{ github.base_ref || github.ref_name }}
       NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -102,6 +102,21 @@ jobs:
           )
           if [[ "$OPEN_ISSUES" == "true" ]]; then
             SCAN_ARGS+=(--open-issues)
+          fi
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+            mapfile -t PR_PKGS < <(
+              git diff --name-only "$BASE_REF"..HEAD -- ports/custom/ builder/vex/ \
+                | awk -F/ '
+                    $1=="ports" && $2=="custom" && NF>=4 && $4!="" && $4!="REPO" && $4!~ /^\./ { print $4 }
+                    $1=="builder" && $2=="vex" && $3~ /\.json$/ { sub(/\.json$/, "", $3); print $3 }
+                  ' \
+                | sort -u
+            )
+            if (( ${#PR_PKGS[@]} > 0 )); then
+              echo "==> Scoping PR vulnerability scan to modified package(s): ${PR_PKGS[*]}"
+              SCAN_ARGS+=("${PR_PKGS[@]}")
+            fi
           fi
           PYTHONPATH=./builder python3 -m vulntool scan "${SCAN_ARGS[@]}"
 
