@@ -175,6 +175,12 @@ def publish_repo(
 
     pkgs_dir = repo_root / "irradium" / "packages"
     pkgs_dir.mkdir(parents=True, exist_ok=True)
+    # Signify .sig files are a fixed 155 bytes; touch them before syncing so
+    # `aws s3 sync` never skips a .sig whose local mtime is older than R2's
+    # while uploading a differently-sized .pkg.tar.gz.
+    for sig_path in pkgs_dir.rglob("*.sig"):
+        if sig_path.is_file():
+            sig_path.touch()
     remote_pkgs = f"s3://{r2_bucket}/irradium/packages/"
     print(f"==> Syncing {pkgs_dir}/ to {remote_pkgs}...", flush=True)
 
