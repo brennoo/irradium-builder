@@ -58,7 +58,6 @@ mc
 medit
 nodejs
 pango-compat
-php-zip
 pkg-get
 qt5
 qt6-base
@@ -201,8 +200,6 @@ openjdk21-jdk
 openvpn
 p7zip
 patroni
-php-bcmath
-php-pgsql
 pkcs11-helper
 pkgtools
 portmidi

@@ -23,7 +23,8 @@ BUILD_TXT = PACKAGES_DIR / "build.txt"
 UPSTREAM_TXT = PACKAGES_DIR / "upstream.txt"
 
 DEFAULT_ARCH = os.environ.get("ARCH", "riscv64")
-DEFAULT_DISTR_VERSION = os.environ.get("DISTR_VERSION", "3.8")
+_RAW_DISTR_VERSION = os.environ.get("DISTR_VERSION", "").strip()
+DEFAULT_DISTR_VERSION = _RAW_DISTR_VERSION if re.fullmatch(r"\d+\.\d+", _RAW_DISTR_VERSION) else "3.8"
 DEFAULT_MIRROR_DOMAIN = os.environ.get("MIRROR_DOMAIN", "https://irradium.blackhole.com.br").rstrip("/")
 
 CATEGORIES = ("core", "opt", "xorg", "xfce", "contrib")
