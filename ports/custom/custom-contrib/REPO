@@ -1,6 +1,17 @@
+d:firefox
 d:haproxy
 d:libssh2
 d:net-snmp
+f:c45bb7754e1e93022297e6c8f9bbb3eb:firefox/.footprint.aarch64
+f:eb5e46465a88148b6cd781237e350b1d:firefox/.footprint.riscv64
+f:e724ec27f46f0276d607c1f641ed0d4f:firefox/.override
+f:12e8caa6654a5bf8da9aa8b4ba532b2b:firefox/.signature.aarch64
+f:129e483007876900288e0a1397063a89:firefox/.signature.riscv64
+f:6672bad76884262ab027fb810301ba8c:firefox/Pkgfile
+f:5967a4ed6d1f029d16d70beaa71246d8:firefox/README
+f:c9ccd47ae6a570100ebf31d51a0e7a1f:firefox/firefox.desktop
+f:63298fc667a9ba67c138866359e4b99e:firefox/fix-target-detection.patch
+f:34bfc3b23f5c0b0fb44224fab1693e9f:firefox/node-stdout-nonblocking-wrapper
 f:4b71531884d89aef5a89483b6752c5a2:haproxy/.footprint
 f:bc76415fc681918c4b68e193eb10fcca:haproxy/.md5sum
 f:6a48340af05ee43fa6e0ba53336da522:haproxy/.override

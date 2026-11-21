@@ -525,23 +525,42 @@ def _find_missing_implicit_ports(arch: str) -> list[str]:
                 if tok and not tok.startswith("$") and tok not in installed_pcs:
                     missing_pcs.add(tok + ".pc")
 
-    # 2. Collect missing DT_NEEDED shared libraries from /lib and /usr/lib
+    # 2. Collect missing DT_NEEDED shared libraries from /lib, /usr/lib, and ELF binaries in /bin, /usr/bin
     lib_dirs = ["/lib", "/usr/lib", "/lib64", "/usr/lib64"]
+    bin_dirs = ["/bin", "/usr/bin", "/sbin", "/usr/sbin"]
     installed_sos: set[str] = set()
-    so_paths: list[str] = []
+    elf_paths: list[str] = []
+    seen_realpaths: set[str] = set()
     for d in lib_dirs:
         if os.path.isdir(d):
             for entry in os.scandir(d):
                 if ".so" in entry.name and (entry.is_file() or entry.is_symlink()):
                     installed_sos.add(entry.name)
                     if entry.is_file(follow_symlinks=True):
-                        so_paths.append(entry.path)
+                        rp = os.path.realpath(entry.path)
+                        if rp not in seen_realpaths:
+                            seen_realpaths.add(rp)
+                            elf_paths.append(entry.path)
+    for d in bin_dirs:
+        if os.path.isdir(d):
+            for entry in os.scandir(d):
+                if entry.is_file(follow_symlinks=True):
+                    rp = os.path.realpath(entry.path)
+                    if rp in seen_realpaths:
+                        continue
+                    try:
+                        with open(entry.path, "rb") as f:
+                            if f.read(4) == b"\x7fELF":
+                                seen_realpaths.add(rp)
+                                elf_paths.append(entry.path)
+                    except OSError:
+                        continue
 
     missing_sos: set[str] = set()
-    if so_paths:
+    if elf_paths:
         try:
             res = subprocess.run(
-                ["readelf", "-d", *so_paths],
+                ["readelf", "-d", *elf_paths],
                 capture_output=True,
                 text=True,
                 check=False,
@@ -608,6 +627,7 @@ class ContainerBuilder:
         self.mirror_url = mirror_url.rstrip("/")
         self.ssl_ctx = ssl_ctx
         self.invalid_remote_pkgs: set[str] = set()
+        self._in_implicit_deps: bool = False
 
     def check_target_already_built(self, port_dir: pathlib.Path) -> bool:
         """Check if a target port is already built and validly signed locally or on the mirror."""
@@ -786,39 +806,45 @@ class ContainerBuilder:
         return False
 
     def ensure_implicit_deps(self) -> None:
-        max_passes = 6
-        seen_ports: set[str] = set()
-        for _ in range(max_passes):
-            missing_ports = _find_missing_implicit_ports(self.arch)
-            if not missing_ports:
-                break
-            added_any = False
-            for impl_pkg in missing_ports:
-                if impl_pkg in seen_ports:
-                    continue
-                seen_ports.add(impl_pkg)
-                sub_deps = _prt_get_depends_uninstalled(impl_pkg)
-                if sub_deps:
-                    for sub_dep in sub_deps:
-                        sub_path = _prt_get_path(sub_dep)
-                        if sub_path is not None:
+        if self._in_implicit_deps:
+            return
+        self._in_implicit_deps = True
+        try:
+            max_passes = 6
+            seen_ports: set[str] = set()
+            for _ in range(max_passes):
+                missing_ports = _find_missing_implicit_ports(self.arch)
+                if not missing_ports:
+                    break
+                added_any = False
+                for impl_pkg in missing_ports:
+                    if impl_pkg in seen_ports:
+                        continue
+                    seen_ports.add(impl_pkg)
+                    sub_deps = _prt_get_depends_uninstalled(impl_pkg)
+                    if sub_deps:
+                        for sub_dep in sub_deps:
+                            sub_path = _prt_get_path(sub_dep)
+                            if sub_path is not None:
+                                print(
+                                    f"==> [BUILD:IMPLICIT-DEP] Installing transitive .pc/.so dependency {sub_dep} (via {impl_pkg})",
+                                    flush=True,
+                                )
+                                self.build_single_port(sub_path, role="dep")
+                                added_any = True
+                    elif not _prt_get_isinst(impl_pkg):
+                        impl_path = _prt_get_path(impl_pkg)
+                        if impl_path is not None:
                             print(
-                                f"==> [BUILD:IMPLICIT-DEP] Installing transitive .pc/.so dependency {sub_dep} (via {impl_pkg})",
+                                f"==> [BUILD:IMPLICIT-DEP] Installing transitive .pc/.so dependency {impl_pkg}",
                                 flush=True,
                             )
-                            self.build_single_port(sub_path, role="dep")
+                            self.build_single_port(impl_path, role="dep")
                             added_any = True
-                elif not _prt_get_isinst(impl_pkg):
-                    impl_path = _prt_get_path(impl_pkg)
-                    if impl_path is not None:
-                        print(
-                            f"==> [BUILD:IMPLICIT-DEP] Installing transitive .pc/.so dependency {impl_pkg}",
-                            flush=True,
-                        )
-                        self.build_single_port(impl_path, role="dep")
-                        added_any = True
-            if not added_any:
-                break
+                if not added_any:
+                    break
+        finally:
+            self._in_implicit_deps = False
 
     def build_single_port(
         self,
@@ -848,7 +874,7 @@ class ContainerBuilder:
             ):
                 return
 
-        if role == "target":
+        if not self._in_implicit_deps:
             self.ensure_implicit_deps()
             name, version, release = _source_pkgfile_meta(port_dir)
             pkg_file = f"{name}#{version}-{release}.pkg.tar.gz"
